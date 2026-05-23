@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Customer Ops Hub",
+  title: "Signal Desk",
   description: "Shared support, feedback, help search, and email operations.",
 };
 

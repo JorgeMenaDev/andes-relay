@@ -11,11 +11,20 @@ export const getOverview = query({
     newFeedback: v.number(),
     queuedEmails: v.number(),
     contacts: v.number(),
+    contactSubmissions: v.number(),
+    accountCreations: v.number(),
     recentSearches: v.number(),
   }),
   handler: async (ctx) => {
-    const [openTickets, newFeedback, queuedEmails, contacts, recentSearches] =
-      await Promise.all([
+    const [
+      openTickets,
+      newFeedback,
+      queuedEmails,
+      contacts,
+      contactSubmissions,
+      accountCreations,
+      recentSearches,
+    ] = await Promise.all([
         ctx.db
           .query("supportTickets")
           .withIndex("by_status_updated_at", (q) => q.eq("status", "open"))
@@ -29,6 +38,8 @@ export const getOverview = query({
           .withIndex("by_status_created_at", (q) => q.eq("status", "queued"))
           .collect(),
         ctx.db.query("contacts").collect(),
+        ctx.db.query("contactSubmissions").order("desc").take(25),
+        ctx.db.query("accountCreations").order("desc").take(25),
         ctx.db.query("helpSearches").order("desc").take(25),
       ]);
 
@@ -37,6 +48,8 @@ export const getOverview = query({
       newFeedback: newFeedback.length,
       queuedEmails: queuedEmails.length,
       contacts: contacts.length,
+      contactSubmissions: contactSubmissions.length,
+      accountCreations: accountCreations.length,
       recentSearches: recentSearches.length,
     };
   },
@@ -91,6 +104,26 @@ export const listContacts = query({
   returns: v.array(v.any()),
   handler: async (ctx, args) =>
     await ctx.db.query("contacts").order("desc").take(args.limit ?? 50),
+});
+
+export const listContactSubmissions = query({
+  args: { limit: limitArg },
+  returns: v.array(v.any()),
+  handler: async (ctx, args) =>
+    await ctx.db
+      .query("contactSubmissions")
+      .order("desc")
+      .take(args.limit ?? 50),
+});
+
+export const listAccountCreations = query({
+  args: { limit: limitArg },
+  returns: v.array(v.any()),
+  handler: async (ctx, args) =>
+    await ctx.db
+      .query("accountCreations")
+      .order("desc")
+      .take(args.limit ?? 50),
 });
 
 export const listHelpSearches = query({

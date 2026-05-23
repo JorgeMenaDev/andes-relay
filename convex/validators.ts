@@ -5,6 +5,8 @@ export const companyKey = v.union(v.literal("andesphere"), v.literal("arketix"))
 export const eventType = v.union(
   v.literal("support.ticket.created"),
   v.literal("support.ticket.message"),
+  v.literal("contact.form.submitted"),
+  v.literal("user.account.created"),
   v.literal("feedback.created"),
   v.literal("help.search"),
   v.literal("email.intent.created"),
@@ -93,6 +95,24 @@ export const feedbackPayload = v.object({
   type: v.optional(v.string()),
 });
 
+export const contactFormPayload = v.object({
+  externalId: v.optional(v.string()),
+  subject: v.optional(v.string()),
+  message: v.string(),
+  company: v.optional(v.string()),
+  phone: v.optional(v.string()),
+  page: v.optional(v.string()),
+});
+
+export const accountPayload = v.object({
+  externalId: v.optional(v.string()),
+  email: v.string(),
+  name: v.optional(v.string()),
+  locale: v.optional(locale),
+  plan: v.optional(v.string()),
+  source: v.optional(v.string()),
+});
+
 export const helpSearchPayload = v.object({
   query: v.string(),
   resultCount: v.optional(v.number()),
@@ -120,6 +140,8 @@ export const opsEvent = v.object({
   context: v.optional(context),
   support: v.optional(supportPayload),
   supportMessage: v.optional(supportMessagePayload),
+  contactForm: v.optional(contactFormPayload),
+  account: v.optional(accountPayload),
   feedback: v.optional(feedbackPayload),
   search: v.optional(helpSearchPayload),
   email: v.optional(emailIntentPayload),

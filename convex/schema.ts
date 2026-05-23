@@ -96,6 +96,38 @@ export default defineSchema({
     .index("by_product_created_at", ["companyKey", "productKey", "createdAt"])
     .index("by_source_external", ["companyKey", "productKey", "externalId"]),
 
+  contactSubmissions: defineTable({
+    externalId: v.string(),
+    contactId: v.optional(v.id("contacts")),
+    companyKey,
+    productKey: v.string(),
+    subject: v.optional(v.string()),
+    message: v.string(),
+    company: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    locale: v.optional(locale),
+    context: v.optional(context),
+    createdAt: v.number(),
+  })
+    .index("by_product_created_at", ["companyKey", "productKey", "createdAt"])
+    .index("by_source_external", ["companyKey", "productKey", "externalId"]),
+
+  accountCreations: defineTable({
+    externalId: v.string(),
+    contactId: v.optional(v.id("contacts")),
+    companyKey,
+    productKey: v.string(),
+    email: v.string(),
+    name: v.optional(v.string()),
+    locale: v.optional(locale),
+    plan: v.optional(v.string()),
+    source: v.optional(v.string()),
+    context: v.optional(context),
+    createdAt: v.number(),
+  })
+    .index("by_product_created_at", ["companyKey", "productKey", "createdAt"])
+    .index("by_source_external", ["companyKey", "productKey", "externalId"]),
+
   helpSearches: defineTable({
     contactId: v.optional(v.id("contacts")),
     companyKey,

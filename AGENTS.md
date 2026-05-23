@@ -4,7 +4,7 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Customer Ops Hub Notes
+# Signal Desk Notes
 
 - Always use Bun in this repo. Do not use npm, pnpm, or yarn.
 - The app is deployed at `https://customer-ops-hub.vercel.app`.
@@ -14,6 +14,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Keep product app integration through `@arketix/customer-ops-sdk`; do not reintroduce copy/pasted per-product ingestion clients.
 - The SDK currently lives at `packages/customer-ops-sdk` and is consumed locally with Bun workspaces.
 - The SDK is publish-ready for GitHub Packages, but publishing requires registry auth and a real `bun publish` step.
+- `publishConfig.registry = https://npm.pkg.github.com` means the SDK publishes to GitHub Packages, not public npm.
+- `publishConfig.access = restricted` makes the package restricted after publish; it does not by itself publish the SDK or give Vercel/product repos permission to install it.
+- External product repos need GitHub Packages read auth before they can install `@arketix/customer-ops-sdk` in local or Vercel builds.
 - Root `bun run build` runs `prebuild`, which builds the SDK before Next.js builds. Preserve that ordering.
 - Do not commit `.env.local`, ingestion secrets, Resend keys, Clerk keys, or GitHub package tokens.
 - Generated SDK `dist` output is ignored and should not be committed.

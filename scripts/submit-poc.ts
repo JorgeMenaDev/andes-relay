@@ -36,6 +36,21 @@ const acredix = createCustomerOpsClient({
 
 const submissions = [
   () =>
+    andy.trackAccountCreated({
+      eventId: "andy-account-created-001",
+      occurredAt: now - 150_000,
+      externalId: "andy_user_001",
+      email: "sofia@example.com",
+      name: "Sofia Alvarez",
+      locale: "es",
+      source: "clerk",
+      context: {
+        currentUrl: "https://andypartner.com/sign-up",
+        userAgent: "poc-script",
+        accountId: "andy_account_001",
+      },
+    }),
+  () =>
     andy.submitSupportTicket({
       eventId: "andy-support-001",
       occurredAt: now - 120_000,
@@ -73,6 +88,26 @@ const submissions = [
       },
       query: "como conectar whatsapp",
       resultCount: 2,
+    }),
+  () =>
+    acredix.submitContactForm({
+      eventId: "acredix-contact-form-001",
+      occurredAt: now - 75_000,
+      contact: {
+        email: "maria@example.com",
+        name: "Maria Torres",
+        locale: "es",
+        externalId: "acredix_contact_001",
+      },
+      context: {
+        currentUrl: "https://acredix.cl/contacto",
+        userAgent: "poc-script",
+      },
+      externalId: "acredix-contact-form-001",
+      subject: "Financiamiento para empresa",
+      message: "Quiero conversar sobre opciones de financiamiento.",
+      company: "Torres SpA",
+      page: "https://acredix.cl/contacto",
     }),
   () =>
     acredix.submitFeedback({

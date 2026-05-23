@@ -45,6 +45,24 @@ export type FeedbackInput = BaseEventInput & {
   type?: string;
 };
 
+export type ContactFormInput = BaseEventInput & {
+  externalId?: string;
+  subject?: string;
+  message: string;
+  company?: string;
+  phone?: string;
+  page?: string;
+};
+
+export type AccountCreatedInput = BaseEventInput & {
+  externalId?: string;
+  email: string;
+  name?: string;
+  locale?: Locale;
+  plan?: string;
+  source?: string;
+};
+
 export type HelpSearchInput = BaseEventInput & {
   query: string;
   resultCount?: number;
@@ -128,6 +146,46 @@ export const createCustomerOpsClient = ({
         contact,
         context,
         feedback: { externalId, title, message, type },
+      }),
+    submitContactForm: ({
+      eventId,
+      occurredAt = Date.now(),
+      contact,
+      context,
+      externalId,
+      subject,
+      message,
+      company,
+      phone,
+      page,
+    }: ContactFormInput) =>
+      submitEvent({
+        eventId,
+        type: "contact.form.submitted",
+        occurredAt,
+        contact,
+        context,
+        contactForm: { externalId, subject, message, company, phone, page },
+      }),
+    trackAccountCreated: ({
+      eventId,
+      occurredAt = Date.now(),
+      contact,
+      context,
+      externalId,
+      email,
+      name,
+      locale,
+      plan,
+      source,
+    }: AccountCreatedInput) =>
+      submitEvent({
+        eventId,
+        type: "user.account.created",
+        occurredAt,
+        contact: contact ?? { email, name, locale, externalId },
+        context,
+        account: { externalId, email, name, locale, plan, source },
       }),
     trackHelpSearch: ({
       eventId,

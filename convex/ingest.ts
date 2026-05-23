@@ -226,6 +226,81 @@ export const ingestEvent = mutation({
       return created(feedbackId);
     }
 
+    if (event.type === "contact.form.submitted" && event.contactForm) {
+      const sourceExternalId = eventExternalId(
+        event.eventId,
+        event.contactForm.externalId,
+      );
+      const existingSubmission = await ctx.db
+        .query("contactSubmissions")
+        .withIndex("by_source_external", (q) =>
+          q
+            .eq("companyKey", companyKey)
+            .eq("productKey", productKey)
+            .eq("externalId", sourceExternalId),
+        )
+        .unique();
+
+      if (existingSubmission) {
+        return duplicate(existingSubmission._id);
+      }
+
+      const submissionId = await ctx.db.insert("contactSubmissions", {
+        externalId: sourceExternalId,
+        contactId,
+        companyKey,
+        productKey,
+        subject: event.contactForm.subject,
+        message: event.contactForm.message,
+        company: event.contactForm.company,
+        phone: event.contactForm.phone,
+        locale: event.contact?.locale,
+        context: {
+          ...event.context,
+          currentUrl: event.contactForm.page ?? event.context?.currentUrl,
+        },
+        createdAt: now,
+      });
+
+      return created(submissionId);
+    }
+
+    if (event.type === "user.account.created" && event.account) {
+      const sourceExternalId = eventExternalId(
+        event.eventId,
+        event.account.externalId,
+      );
+      const existingAccount = await ctx.db
+        .query("accountCreations")
+        .withIndex("by_source_external", (q) =>
+          q
+            .eq("companyKey", companyKey)
+            .eq("productKey", productKey)
+            .eq("externalId", sourceExternalId),
+        )
+        .unique();
+
+      if (existingAccount) {
+        return duplicate(existingAccount._id);
+      }
+
+      const accountId = await ctx.db.insert("accountCreations", {
+        externalId: sourceExternalId,
+        contactId,
+        companyKey,
+        productKey,
+        email: event.account.email,
+        name: event.account.name,
+        locale: event.account.locale ?? event.contact?.locale,
+        plan: event.account.plan,
+        source: event.account.source,
+        context: event.context,
+        createdAt: now,
+      });
+
+      return created(accountId);
+    }
+
     if (event.type === "help.search" && event.search) {
       const searchId = await ctx.db.insert("helpSearches", {
         contactId,

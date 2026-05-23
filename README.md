@@ -1,4 +1,4 @@
-# Customer Ops Hub
+# Signal Desk
 
 Shared support, feedback, help-search, and email operations for Arketix and Andesphere products.
 
@@ -11,9 +11,9 @@ This project is live in production and already has a dashboard UI:
 - Production Convex: https://confident-yak-264.convex.cloud
 - Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
 
-The dashboard reads production Convex data. Product apps should submit events to the production ingestion endpoint with `CUSTOMER_OPS_INGEST_SECRET`.
+The dashboard reads production Convex data. Product apps submit standardized events to the production ingestion endpoint with `CUSTOMER_OPS_INGEST_SECRET`.
 
-The SDK exists as a local Bun workspace package in this repo. It is ready to publish privately, but it is not a registry package until `bun publish` is run with GitHub Packages auth configured.
+The SDK exists as a local Bun workspace package in this repo. It is private-publish ready, but it is not available to other repositories until `bun publish` is run with GitHub Packages auth configured.
 
 ## Stack
 
@@ -30,7 +30,7 @@ flowchart LR
   product["Product apps\nAndy, Acredix, Neurored, etc."] --> sdk["@arketix/customer-ops-sdk"]
   sdk --> ingest["Convex HTTP /ingest"]
   ingest --> db["Convex tables\ncontacts, support, feedback,\nsearches, emailJobs"]
-  db --> dashboard["Customer Ops Hub dashboard"]
+  db --> dashboard["Signal Desk dashboard"]
   db --> email["Resend-ready email sender"]
 ```
 
@@ -77,14 +77,14 @@ Inside this repo, it is consumed as a Bun workspace dependency:
 "@arketix/customer-ops-sdk": "workspace:*"
 ```
 
-That means the dashboard repo can import the package immediately without publishing it.
+That means this repo can import the package immediately without publishing it. Today, the `scripts/submit-poc.ts` script is the real consumer of that workspace SDK.
 
 For other repositories, there are two options:
 
 1. Publish it privately to GitHub Packages, then install `@arketix/customer-ops-sdk` in each product repo.
 2. Temporarily copy the SDK source into a product repo while the contract is still changing.
 
-Recommendation: publish privately once the first real product integration is ready. That keeps all products on one versioned client and avoids copy/paste drift.
+Recommendation: publish privately once the first real product integration is ready. That keeps all products on one versioned client and avoids copy/paste drift. Until then, external product repos are not using the package directly.
 
 Use it like this from product apps:
 
@@ -124,8 +124,10 @@ The same client has `submitSupportTicket`, `trackHelpSearch`, and `queueEmail`.
 This means:
 
 - `registry` tells Bun/npm to publish the package to GitHub Packages instead of the public npm registry.
-- `access: restricted` means it should be treated as a private/restricted package.
+- `access: restricted` means GitHub Packages should treat the package as restricted access, not public npm access.
 - The package name `@arketix/customer-ops-sdk` is scoped to the Arketix GitHub organization.
+
+Important: this only makes the package ready to publish privately. It does not publish the package, grant every repo access, or configure Vercel builds automatically.
 
 Publishing requires GitHub Packages auth. A product repo that consumes the package will need an `.npmrc` or CI config that can read GitHub Packages:
 
@@ -140,6 +142,8 @@ After publishing, install it in a product app with Bun:
 bun add @arketix/customer-ops-sdk
 ```
 
+For Vercel deployments, every consuming product also needs a read token available during install. Without that, local development may work but Vercel builds will fail because the private package cannot be downloaded.
+
 Do not publish secrets. Product apps only need:
 
 - `CUSTOMER_OPS_ENDPOINT=https://confident-yak-264.convex.site`
@@ -153,11 +157,13 @@ Right now:
 - The production ingestion endpoint is live.
 - The POC script uses the SDK package through the Bun workspace dependency.
 - Production has seeded Andy and Acredix example events.
+- No external production app imports `@arketix/customer-ops-sdk` from GitHub Packages yet.
 
 Not done yet:
 
 - The SDK has not been published to GitHub Packages.
 - Andy, Acredix, Neurored, Business Control Room, and Wainwrights Baggers do not yet import the SDK directly.
+- Product Vercel projects do not yet have GitHub Packages read-token install config.
 - Resend sending is ready in code, but production email delivery still needs `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
 
 ## Product Integration Checklist
@@ -171,3 +177,9 @@ For each product:
 5. Send help/support searches through `trackHelpSearch`.
 6. Queue standardized transactional emails through `queueEmail`.
 7. Verify the event appears in https://customer-ops-hub.vercel.app.
+
+## Dashboard UI
+
+The production dashboard is already deployed at https://customer-ops-hub.vercel.app. It currently shows production Convex data for support tickets, feedback, contacts, queued email jobs, and help searches.
+
+Authentication is being added with Clerk. Until the Clerk Vercel integration is fully provisioned and the production environment variables are present, the deployment should be treated as a live internal POC dashboard rather than a finished secure admin surface.
