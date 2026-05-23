@@ -1,8 +1,8 @@
-type CompanyKey = "andesphere" | "arketix";
-type Locale = "en" | "es" | "pt" | "fr" | "de";
-type Priority = "low" | "normal" | "high" | "urgent";
+export type CompanyKey = "andesphere" | "arketix";
+export type Locale = "en" | "es" | "pt" | "fr" | "de";
+export type Priority = "low" | "normal" | "high" | "urgent";
 
-type SourceConfig = {
+export type SourceConfig = {
   endpoint: string;
   secret: string;
   companyKey: CompanyKey;
@@ -10,27 +10,27 @@ type SourceConfig = {
   environment?: string;
 };
 
-type Contact = {
+export type Contact = {
   email: string;
   name?: string;
   locale?: Locale;
   externalId?: string;
 };
 
-type Context = {
+export type Context = {
   currentUrl?: string;
   userAgent?: string;
   accountId?: string;
 };
 
-type BaseEventInput = {
+export type BaseEventInput = {
   eventId: string;
   occurredAt?: number;
   contact?: Contact;
   context?: Context;
 };
 
-type SupportTicketInput = BaseEventInput & {
+export type SupportTicketInput = BaseEventInput & {
   externalId?: string;
   title: string;
   message: string;
@@ -38,19 +38,19 @@ type SupportTicketInput = BaseEventInput & {
   priority?: Priority;
 };
 
-type FeedbackInput = BaseEventInput & {
+export type FeedbackInput = BaseEventInput & {
   externalId?: string;
   title: string;
   message: string;
   type?: string;
 };
 
-type HelpSearchInput = BaseEventInput & {
+export type HelpSearchInput = BaseEventInput & {
   query: string;
   resultCount?: number;
 };
 
-type EmailIntentInput = BaseEventInput & {
+export type EmailIntentInput = BaseEventInput & {
   recipientEmail: string;
   templateKey: string;
   subject: string;

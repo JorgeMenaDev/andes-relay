@@ -5,6 +5,7 @@
     "": {
       "name": "customer-ops-hub",
       "dependencies": {
+        "@arketix/customer-ops-sdk": "workspace:*",
         "@clerk/nextjs": "^7.4.1",
         "convex": "^1.39.1",
         "lucide-react": "^1.16.0",
@@ -23,6 +24,13 @@
         "typescript": "^5",
       },
     },
+    "packages/customer-ops-sdk": {
+      "name": "@arketix/customer-ops-sdk",
+      "version": "0.1.0",
+      "devDependencies": {
+        "typescript": "^5",
+      },
+    },
   },
   "trustedDependencies": [
     "sharp",
@@ -30,6 +38,8 @@
   ],
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
+
+    "@arketix/customer-ops-sdk": ["@arketix/customer-ops-sdk@workspace:packages/customer-ops-sdk"],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
 

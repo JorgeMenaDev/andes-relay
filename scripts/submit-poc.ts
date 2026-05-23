@@ -1,6 +1,6 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
-import { createCustomerOpsClient } from "../sdk/customer-ops";
+import { createCustomerOpsClient } from "@arketix/customer-ops-sdk";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 const endpoint = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;

@@ -7,13 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun run typecheck:sdk && tsc --noEmit",
     "check": "bun run typecheck && bun run lint && bun run build",
     "convex:dev": "bunx convex dev",
     "convex:deploy": "bunx convex deploy",
-    "poc:submit": "bun --env-file=.env.local scripts/submit-poc.ts"
+    "poc:submit": "bun --env-file=.env.local scripts/submit-poc.ts",
+    "build:sdk": "bun run --cwd packages/customer-ops-sdk build",
+    "typecheck:sdk": "bun run --cwd packages/customer-ops-sdk typecheck",
+    "prebuild": "bun run build:sdk"
   },
   "dependencies": {
+    "@arketix/customer-ops-sdk": "workspace:*",
     "@clerk/nextjs": "^7.4.1",
     "convex": "^1.39.1",
     "lucide-react": "^1.16.0",
@@ -38,5 +42,8 @@
   "trustedDependencies": [
     "sharp",
     "unrs-resolver"
+  ],
+  "workspaces": [
+    "packages/*"
   ]
 }

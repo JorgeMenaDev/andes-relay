@@ -43,10 +43,10 @@ Feedback and support are separate event types and become separate records. Email
 
 ## Product App Client
 
-Use `sdk/customer-ops.ts` from product apps so every repo submits the same contract:
+Use `@arketix/customer-ops-sdk` from product apps so every repo submits the same contract:
 
 ```ts
-import { createCustomerOpsClient } from "./customer-ops";
+import { createCustomerOpsClient } from "@arketix/customer-ops-sdk";
 
 const customerOps = createCustomerOpsClient({
   endpoint: process.env.CUSTOMER_OPS_ENDPOINT!,
