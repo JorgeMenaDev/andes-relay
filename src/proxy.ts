@@ -8,6 +8,7 @@ const hasClerkConfig =
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/__clerk(.*)",
   "/favicon.ico",
 ]);
 
@@ -28,5 +29,5 @@ export default function proxy(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|.*\\..*).*)", "/"],
+  matcher: ["/__clerk(.*)", "/((?!_next|.*\\..*).*)", "/"],
 };
