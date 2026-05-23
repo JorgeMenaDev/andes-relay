@@ -19,7 +19,7 @@ The SDK exists as a local Bun workspace package in this repo. It is private-publ
 
 - Next.js App Router dashboard
 - Convex as the source of truth
-- Clerk-ready authentication
+- Clerk authentication
 - Resend-ready transactional email queue
 - HTTP ingestion contract for every product app
 
@@ -182,4 +182,11 @@ For each product:
 
 The production dashboard is already deployed at https://customer-ops-hub.vercel.app. It currently shows production Convex data for support tickets, feedback, contacts, queued email jobs, and help searches.
 
-Authentication is being added with Clerk. Until the Clerk Vercel integration is fully provisioned and the production environment variables are present, the deployment should be treated as a live internal POC dashboard rather than a finished secure admin surface.
+Authentication is enabled with Clerk on the production deployment. The current Vercel URL uses an existing Clerk test tenant so login can be verified before the final Signal Desk domain is chosen. For the final production setup, create a dedicated Clerk production application for Signal Desk or move the dashboard onto the final custom domain, then replace the Clerk env vars.
+
+Required dashboard auth env vars:
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`

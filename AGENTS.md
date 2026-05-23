@@ -10,6 +10,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - The app is deployed at `https://customer-ops-hub.vercel.app`.
 - Production Convex is `https://confident-yak-264.convex.cloud`.
 - Production HTTP ingestion is `https://confident-yak-264.convex.site/ingest`.
+- Production dashboard auth is Clerk-protected. The current Vercel URL uses a Clerk test tenant until the final Signal Desk custom domain / production Clerk app is provisioned.
 - Keep support tickets and feedback as separate concepts. Do not merge those flows.
 - Keep product app integration through `@arketix/customer-ops-sdk`; do not reintroduce copy/pasted per-product ingestion clients.
 - The SDK currently lives at `packages/customer-ops-sdk` and is consumed locally with Bun workspaces.
