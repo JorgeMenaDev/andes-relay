@@ -11,7 +11,7 @@ This repository is the first OpenAndes project. It includes a Next.js dashboard,
 This project is already running as the first real use case across Jorge Mena's production products:
 
 - Dashboard: https://customer-ops-hub.vercel.app
-- GitHub: https://github.com/Arketix/customer-ops-hub
+- GitHub: https://github.com/JorgeMenaDev/andes-relay
 - Production Convex: https://confident-yak-264.convex.cloud
 - Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
 
@@ -118,9 +118,9 @@ Inside this repo, it is consumed as a Bun workspace dependency:
 Use it from product apps like this:
 
 ```ts
-import { createCustomerOpsClient } from "@openandes/relay-sdk";
+import { createAndesRelayClient } from "@openandes/relay-sdk";
 
-const relay = createCustomerOpsClient({
+const relay = createAndesRelayClient({
   endpoint: process.env.ANDES_RELAY_ENDPOINT!,
   secret: process.env.ANDES_RELAY_INGEST_SECRET!,
   companyKey: "acme",
