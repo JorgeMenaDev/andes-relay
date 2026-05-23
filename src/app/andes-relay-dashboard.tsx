@@ -32,10 +32,19 @@ const tabs = [
 const products = {
   "andy-partner": "Andy Partner",
   acredix: "Acredix",
+  "acredix-landing": "Acredix Landing",
   wainwrightsbaggers: "Wainwrights Baggers",
   "business-control-room": "Business Control Room",
   neurored: "Neurored",
 } as const;
+
+const companies = {
+  andesphere: "Andesphere",
+  arketix: "Arketix",
+} as const;
+
+const companyName = (key: string) =>
+  companies[key as keyof typeof companies] ?? key;
 
 const productName = (key: string) =>
   products[key as keyof typeof products] ?? key;
@@ -53,6 +62,25 @@ function StatusPill({ children }: { children: string }) {
     <span className="inline-flex h-6 items-center rounded border border-[#d8d1bf] bg-[#fffdf7] px-2 font-mono text-xs font-medium text-[#5c5548]">
       {children}
     </span>
+  );
+}
+
+function SourceStamp({
+  companyKey,
+  productKey,
+}: {
+  companyKey: string;
+  productKey: string;
+}) {
+  return (
+    <div className="flex min-w-40 flex-col gap-1">
+      <span className="text-sm font-semibold text-[#161410]">
+        {companyName(companyKey)}
+      </span>
+      <span className="font-mono text-xs text-[#5c5548]">
+        {productName(productKey)}
+      </span>
+    </div>
   );
 }
 
@@ -158,7 +186,7 @@ function TicketsTable() {
         <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3 font-semibold">Ticket</th>
-            <th className="px-4 py-3 font-semibold">Product</th>
+            <th className="px-4 py-3 font-semibold">Source</th>
             <th className="px-4 py-3 font-semibold">Priority</th>
             <th className="px-4 py-3 font-semibold">Status</th>
             <th className="px-4 py-3 font-semibold">Updated</th>
@@ -174,10 +202,10 @@ function TicketsTable() {
                 </p>
               </td>
               <td className="px-4 py-3">
-                <p className="font-medium text-slate-800">
-                  {productName(ticket.productKey)}
-                </p>
-                <p className="text-xs text-slate-500">{ticket.companyKey}</p>
+                <SourceStamp
+                  companyKey={ticket.companyKey}
+                  productKey={ticket.productKey}
+                />
               </td>
               <td className="px-4 py-3">
                 <StatusPill>{ticket.priority}</StatusPill>
@@ -238,7 +266,7 @@ function FeedbackTable() {
                 {item.title}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                {productName(item.productKey)} · {item.companyKey}
+                {companyName(item.companyKey)} · {productName(item.productKey)}
               </p>
             </div>
             <StatusPill>{item.status}</StatusPill>
@@ -278,7 +306,8 @@ function ContactSubmissionsTable() {
                 {submission.subject ?? "Contact form submission"}
               </h3>
               <p className="mt-1 text-sm text-[#5c5548]">
-                {productName(submission.productKey)} · {submission.companyKey}
+                {companyName(submission.companyKey)} ·{" "}
+                {productName(submission.productKey)}
               </p>
             </div>
             <StatusPill>{formatDate(submission.createdAt)}</StatusPill>
@@ -314,8 +343,8 @@ function AccountCreationsTable() {
         <thead className="border-b border-[#d8d1bf] bg-[#efe8d8] font-mono text-xs uppercase tracking-wide text-[#5c5548]">
           <tr>
             <th className="px-4 py-3 font-semibold">User</th>
-            <th className="px-4 py-3 font-semibold">Product</th>
             <th className="px-4 py-3 font-semibold">Source</th>
+            <th className="px-4 py-3 font-semibold">Signup source</th>
             <th className="px-4 py-3 font-semibold">Created</th>
           </tr>
         </thead>
@@ -329,10 +358,10 @@ function AccountCreationsTable() {
                 <p className="text-[#5c5548]">{account.email}</p>
               </td>
               <td className="px-4 py-3">
-                <p className="font-medium text-[#2f2b24]">
-                  {productName(account.productKey)}
-                </p>
-                <p className="text-xs text-[#5c5548]">{account.companyKey}</p>
+                <SourceStamp
+                  companyKey={account.companyKey}
+                  productKey={account.productKey}
+                />
               </td>
               <td className="px-4 py-3">
                 <StatusPill>{account.source ?? "app"}</StatusPill>
@@ -380,7 +409,7 @@ function ContactsTable() {
                 <p className="text-slate-500">{contact.email}</p>
               </td>
               <td className="px-4 py-3 text-slate-700">
-                {contact.companies.join(", ")}
+                {contact.companies.map(companyName).join(", ")}
               </td>
               <td className="px-4 py-3 text-slate-700">
                 {contact.products.map(productName).join(", ")}
@@ -422,6 +451,9 @@ function EmailTable() {
               <p className="mt-1 text-sm text-slate-500">
                 {email.recipientEmail} · {email.templateKey}
               </p>
+              <p className="mt-1 text-sm text-slate-500">
+                {companyName(email.companyKey)} · {productName(email.productKey)}
+              </p>
             </div>
             <StatusPill>{email.status}</StatusPill>
           </div>
@@ -451,12 +483,13 @@ function SearchTable() {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-base font-semibold text-slate-950">
-            {search.query}
-          </h3>
+              {search.query}
+            </h3>
             <StatusPill>{`${search.resultCount ?? 0} results`}</StatusPill>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            {productName(search.productKey)} · {formatDate(search.createdAt)}
+            {companyName(search.companyKey)} · {productName(search.productKey)} ·{" "}
+            {formatDate(search.createdAt)}
           </p>
         </article>
       ))}

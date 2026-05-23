@@ -20,6 +20,50 @@ Current production examples:
 - `acredix.cl` sends contact form submissions into Andes Relay.
 - `andypartner.com` sends Clerk account-created events into Andes Relay.
 
+## Internal Runbook
+
+Use this section for the current internal setup. The public SDK/domain work is deferred in `BACKLOG.md`.
+
+- Live dashboard: https://customer-ops-hub.vercel.app
+- Public repository: https://github.com/JorgeMenaDev/andes-relay
+- Production Convex: https://confident-yak-264.convex.cloud
+- Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
+- Connected products:
+  - Arketix / Acredix landing: `contact.form.submitted`
+  - Andesphere / Andy Partner: `user.account.created`
+
+Submit the production POC events:
+
+```bash
+ANDES_RELAY_ENDPOINT=https://confident-yak-264.convex.site \
+ANDES_RELAY_INGEST_SECRET=<shared secret> \
+bun run poc:submit
+```
+
+The command should return `created` for new event ids or `duplicate` for existing POC ids, then print the dashboard overview.
+
+Verify Acredix:
+
+1. Submit the Acredix contact form or POST to `https://acredix.cl/api/contact`.
+2. Open the dashboard Forms tab.
+3. Confirm the new form submission shows company `Arketix` and product `Acredix Landing`.
+
+Verify Andy:
+
+1. Create a test Clerk signup event in Andy production.
+2. Open the dashboard Accounts tab.
+3. Confirm the new record shows company `Andesphere`, product `Andy Partner`, and source `clerk`.
+
+## Dashboard Access
+
+The dashboard is Clerk-protected and currently intended for Jorge only. The current production URL is still `customer-ops-hub.vercel.app`, protected by the temporary Clerk tenant used during the first production setup. Keep Clerk enabled until a final custom domain and dedicated Clerk production app are provisioned.
+
+Login path:
+
+1. Open https://customer-ops-hub.vercel.app/sign-in.
+2. Sign in with Jorge's allowed Clerk user.
+3. Confirm the dashboard renders live Convex data.
+
 ## Stack
 
 - Next.js App Router dashboard
@@ -91,6 +135,8 @@ Product apps only need:
 ANDES_RELAY_ENDPOINT=https://your-convex-site.convex.site
 ANDES_RELAY_INGEST_SECRET=<shared secret>
 ```
+
+The first production integrations still keep `CUSTOMER_OPS_ENDPOINT` and `CUSTOMER_OPS_INGEST_SECRET` as temporary fallbacks while naming settles.
 
 ## Ingestion Contract
 
