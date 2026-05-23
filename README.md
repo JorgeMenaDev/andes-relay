@@ -2,6 +2,19 @@
 
 Shared support, feedback, help-search, and email operations for Arketix and Andesphere products.
 
+## Current Status
+
+This project is live in production and already has a dashboard UI:
+
+- Dashboard: https://customer-ops-hub.vercel.app
+- GitHub: https://github.com/Arketix/customer-ops-hub
+- Production Convex: https://confident-yak-264.convex.cloud
+- Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
+
+The dashboard reads production Convex data. Product apps should submit events to the production ingestion endpoint with `CUSTOMER_OPS_INGEST_SECRET`.
+
+The SDK exists as a local Bun workspace package in this repo. It is ready to publish privately, but it is not a registry package until `bun publish` is run with GitHub Packages auth configured.
+
 ## Stack
 
 - Next.js App Router dashboard
@@ -10,12 +23,25 @@ Shared support, feedback, help-search, and email operations for Arketix and Ande
 - Resend-ready transactional email queue
 - HTTP ingestion contract for every product app
 
-## Deployed Surfaces
+## How It Works
 
-- Dashboard: https://customer-ops-hub.vercel.app
-- GitHub: https://github.com/Arketix/customer-ops-hub
-- Production Convex: https://confident-yak-264.convex.cloud
-- Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
+```mermaid
+flowchart LR
+  product["Product apps\nAndy, Acredix, Neurored, etc."] --> sdk["@arketix/customer-ops-sdk"]
+  sdk --> ingest["Convex HTTP /ingest"]
+  ingest --> db["Convex tables\ncontacts, support, feedback,\nsearches, emailJobs"]
+  db --> dashboard["Customer Ops Hub dashboard"]
+  db --> email["Resend-ready email sender"]
+```
+
+Each product sends standardized events:
+
+- `support.ticket.created` creates a support ticket.
+- `feedback.created` creates a feedback item.
+- `help.search` records what users searched for in help/support.
+- `email.intent.created` queues an email job.
+
+Support and feedback are intentionally separate records. Email sending is centralized through `emailJobs`, so each product does not need its own Resend integration.
 
 ## Local Setup
 
@@ -41,9 +67,26 @@ curl -X POST "$CONVEX_SITE_URL/ingest" \
 
 Feedback and support are separate event types and become separate records. Email intents create queued jobs, so delivery can be centralized without every app implementing Resend.
 
-## Product App Client
+## SDK Package
 
-Use `@arketix/customer-ops-sdk` from product apps so every repo submits the same contract:
+The SDK lives in `packages/customer-ops-sdk` and is named `@arketix/customer-ops-sdk`.
+
+Inside this repo, it is consumed as a Bun workspace dependency:
+
+```json
+"@arketix/customer-ops-sdk": "workspace:*"
+```
+
+That means the dashboard repo can import the package immediately without publishing it.
+
+For other repositories, there are two options:
+
+1. Publish it privately to GitHub Packages, then install `@arketix/customer-ops-sdk` in each product repo.
+2. Temporarily copy the SDK source into a product repo while the contract is still changing.
+
+Recommendation: publish privately once the first real product integration is ready. That keeps all products on one versioned client and avoids copy/paste drift.
+
+Use it like this from product apps:
 
 ```ts
 import { createCustomerOpsClient } from "@arketix/customer-ops-sdk";
@@ -66,3 +109,65 @@ await customerOps.submitFeedback({
 ```
 
 The same client has `submitSupportTicket`, `trackHelpSearch`, and `queueEmail`.
+
+## Private Publishing
+
+`packages/customer-ops-sdk/package.json` contains:
+
+```json
+"publishConfig": {
+  "registry": "https://npm.pkg.github.com",
+  "access": "restricted"
+}
+```
+
+This means:
+
+- `registry` tells Bun/npm to publish the package to GitHub Packages instead of the public npm registry.
+- `access: restricted` means it should be treated as a private/restricted package.
+- The package name `@arketix/customer-ops-sdk` is scoped to the Arketix GitHub organization.
+
+Publishing requires GitHub Packages auth. A product repo that consumes the package will need an `.npmrc` or CI config that can read GitHub Packages:
+
+```ini
+@arketix:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_PACKAGES_TOKEN}
+```
+
+After publishing, install it in a product app with Bun:
+
+```bash
+bun add @arketix/customer-ops-sdk
+```
+
+Do not publish secrets. Product apps only need:
+
+- `CUSTOMER_OPS_ENDPOINT=https://confident-yak-264.convex.site`
+- `CUSTOMER_OPS_INGEST_SECRET=<shared secret>`
+
+## What Is Used Right Now
+
+Right now:
+
+- The deployed dashboard is live and reads production Convex.
+- The production ingestion endpoint is live.
+- The POC script uses the SDK package through the Bun workspace dependency.
+- Production has seeded Andy and Acredix example events.
+
+Not done yet:
+
+- The SDK has not been published to GitHub Packages.
+- Andy, Acredix, Neurored, Business Control Room, and Wainwrights Baggers do not yet import the SDK directly.
+- Resend sending is ready in code, but production email delivery still needs `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+
+## Product Integration Checklist
+
+For each product:
+
+1. Install `@arketix/customer-ops-sdk` after the private package is published.
+2. Add `CUSTOMER_OPS_ENDPOINT` and `CUSTOMER_OPS_INGEST_SECRET`.
+3. Send support tickets through `submitSupportTicket`.
+4. Send product feedback through `submitFeedback`.
+5. Send help/support searches through `trackHelpSearch`.
+6. Queue standardized transactional emails through `queueEmail`.
+7. Verify the event appears in https://customer-ops-hub.vercel.app.
