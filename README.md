@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Customer Ops Hub
 
-## Getting Started
+Shared support, feedback, help-search, and email operations for Arketix and Andesphere products.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router dashboard
+- Convex as the source of truth
+- Clerk-ready authentication
+- Resend-ready transactional email queue
+- HTTP ingestion contract for every product app
+
+## Local Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+bunx convex dev
+bun run poc:submit
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The POC script creates one Andy support ticket, one Andy help search, one Acredix feedback item, and one Acredix queued email.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Ingestion Contract
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Product apps submit events to Convex HTTP actions:
 
-## Learn More
+```bash
+curl -X POST "$CONVEX_SITE_URL/ingest" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $CUSTOMER_OPS_INGEST_SECRET" \
+  -d '{"eventId":"example","type":"help.search","occurredAt":0,"source":{"companyKey":"arketix","productKey":"acredix"},"search":{"query":"support","resultCount":1}}'
+```
 
-To learn more about Next.js, take a look at the following resources:
+Feedback and support are separate event types and become separate records. Email intents create queued jobs, so delivery can be centralized without every app implementing Resend.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Product App Client
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Use `sdk/customer-ops.ts` from product apps so every repo submits the same contract:
 
-## Deploy on Vercel
+```ts
+import { createCustomerOpsClient } from "./customer-ops";
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+const customerOps = createCustomerOpsClient({
+  endpoint: process.env.CUSTOMER_OPS_ENDPOINT!,
+  secret: process.env.CUSTOMER_OPS_INGEST_SECRET!,
+  companyKey: "arketix",
+  productKey: "acredix",
+  environment: process.env.NODE_ENV,
+});
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+await customerOps.submitFeedback({
+  eventId: "feedback-123",
+  contact: { email: "maria@example.com", locale: "es" },
+  title: "Add export",
+  message: "Please add PDF export.",
+  type: "feature_request",
+});
+```
+
+The same client has `submitSupportTicket`, `trackHelpSearch`, and `queueEmail`.
