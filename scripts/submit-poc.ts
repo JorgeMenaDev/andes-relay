@@ -1,10 +1,13 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
-import { createCustomerOpsClient } from "@arketix/customer-ops-sdk";
+import { createAndesRelayClient } from "@openandes/relay-sdk";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-const endpoint = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
-const secret = process.env.CUSTOMER_OPS_INGEST_SECRET;
+const endpoint =
+  process.env.ANDES_RELAY_ENDPOINT ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+const secret =
+  process.env.ANDES_RELAY_INGEST_SECRET ??
+  process.env.CUSTOMER_OPS_INGEST_SECRET;
 
 if (!convexUrl) {
   throw new Error("NEXT_PUBLIC_CONVEX_URL is required. Run Convex setup first.");
@@ -12,13 +15,13 @@ if (!convexUrl) {
 
 if (!endpoint || !secret) {
   throw new Error(
-    "NEXT_PUBLIC_CONVEX_SITE_URL and CUSTOMER_OPS_INGEST_SECRET are required.",
+    "ANDES_RELAY_ENDPOINT and ANDES_RELAY_INGEST_SECRET are required.",
   );
 }
 
 const now = Date.now();
 
-const andy = createCustomerOpsClient({
+const andy = createAndesRelayClient({
   endpoint,
   secret,
   companyKey: "andesphere",
@@ -26,7 +29,7 @@ const andy = createCustomerOpsClient({
   environment: "production",
 });
 
-const acredix = createCustomerOpsClient({
+const acredix = createAndesRelayClient({
   endpoint,
   secret,
   companyKey: "arketix",

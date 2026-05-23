@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 
-export const companyKey = v.union(v.literal("andesphere"), v.literal("arketix"));
+export const companyKey = v.string();
 
 export const eventType = v.union(
   v.literal("support.ticket.created"),

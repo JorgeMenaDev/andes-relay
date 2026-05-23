@@ -1,11 +1,10 @@
-export type CompanyKey = "andesphere" | "arketix";
 export type Locale = "en" | "es" | "pt" | "fr" | "de";
 export type Priority = "low" | "normal" | "high" | "urgent";
 
 export type SourceConfig = {
   endpoint: string;
   secret: string;
-  companyKey: CompanyKey;
+  companyKey: string;
   productKey: string;
   environment?: string;
 };
@@ -80,7 +79,7 @@ const buildHeaders = (secret: string) => ({
   "Content-Type": "application/json",
 });
 
-export const createCustomerOpsClient = ({
+export const createAndesRelayClient = ({
   endpoint,
   secret,
   companyKey,
@@ -102,7 +101,7 @@ export const createCustomerOpsClient = ({
     });
 
     if (!response.ok) {
-      throw new Error(`Customer Ops ingest failed: ${response.status}`);
+      throw new Error(`Andes Relay ingest failed: ${response.status}`);
     }
 
     return await response.json();
@@ -220,6 +219,8 @@ export const createCustomerOpsClient = ({
         contact,
         context,
         email: { recipientEmail, templateKey, subject, locale },
-      }),
+    }),
   };
 };
+
+export const createCustomerOpsClient = createAndesRelayClient;

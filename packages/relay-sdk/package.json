@@ -1,5 +1,5 @@
 {
-  "name": "@arketix/customer-ops-sdk",
+  "name": "@openandes/relay-sdk",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,6 @@
     "typescript": "^5"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+    "access": "public"
   }
 }

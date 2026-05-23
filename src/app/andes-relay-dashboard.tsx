@@ -63,7 +63,7 @@ function SetupScreen() {
         <div className="flex items-start justify-between gap-4 border-b border-[#d8d1bf] pb-5">
           <div>
             <p className="font-mono text-sm font-medium uppercase tracking-wide text-[#7b3f00]">
-              Signal Desk
+              Andes Relay
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal">
               Shared support, feedback, help search, and email control.
@@ -90,9 +90,9 @@ function SetupScreen() {
 
         <div className="grid gap-3 md:grid-cols-3">
           {[
-            "Create an Arketix Convex deployment",
-            "Set CUSTOMER_OPS_INGEST_SECRET",
-            "Submit the Andy and Acredix POC fixtures",
+            "Create a Convex deployment",
+            "Set ANDES_RELAY_INGEST_SECRET",
+            "Submit the example product fixtures",
           ].map((item) => (
             <div
               key={item}
@@ -476,10 +476,10 @@ function LiveDashboard() {
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8d1bf] pb-5">
           <div>
             <p className="font-mono text-sm font-medium uppercase tracking-wide text-[#7b3f00]">
-              Signal Desk
+              Andes Relay
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-              Shared inbox for Arketix and Andesphere products
+              Open-source customer signal routing for SaaS products
             </h1>
           </div>
           <button
@@ -562,7 +562,7 @@ function LiveDashboard() {
   );
 }
 
-export function CustomerOpsDashboard({ configured }: { configured: boolean }) {
+export function AndesRelayDashboard({ configured }: { configured: boolean }) {
   if (!configured) {
     return <SetupScreen />;
   }

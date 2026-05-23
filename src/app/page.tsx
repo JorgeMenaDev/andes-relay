@@ -1,4 +1,4 @@
-import { CustomerOpsDashboard } from "./customer-ops-dashboard";
+import { AndesRelayDashboard } from "./andes-relay-dashboard";
 import { Providers } from "./providers";
 
 export default function Home() {
@@ -6,7 +6,7 @@ export default function Home() {
 
   return (
     <Providers convexUrl={convexUrl}>
-      <CustomerOpsDashboard configured={Boolean(convexUrl)} />
+      <AndesRelayDashboard configured={Boolean(convexUrl)} />
     </Providers>
   );
 }

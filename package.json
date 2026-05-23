@@ -1,5 +1,5 @@
 {
-  "name": "customer-ops-hub",
+  "name": "andes-relay",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,12 +12,12 @@
     "convex:dev": "bunx convex dev",
     "convex:deploy": "bunx convex deploy",
     "poc:submit": "bun --env-file=.env.local scripts/submit-poc.ts",
-    "build:sdk": "bun run --cwd packages/customer-ops-sdk build",
-    "typecheck:sdk": "bun run --cwd packages/customer-ops-sdk typecheck",
+    "build:sdk": "bun run --cwd packages/relay-sdk build",
+    "typecheck:sdk": "bun run --cwd packages/relay-sdk typecheck",
     "prebuild": "bun run build:sdk"
   },
   "dependencies": {
-    "@arketix/customer-ops-sdk": "workspace:*",
+    "@openandes/relay-sdk": "workspace:*",
     "@clerk/nextjs": "^7.4.1",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dropdown-menu": "^2.1.16",

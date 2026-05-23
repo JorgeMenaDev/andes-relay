@@ -20,14 +20,18 @@ http.route({
   path: "/ingest",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const secret = process.env.CUSTOMER_OPS_INGEST_SECRET;
+    const secret =
+      process.env.ANDES_RELAY_INGEST_SECRET ??
+      process.env.CUSTOMER_OPS_INGEST_SECRET;
 
     if (!secret) {
-      return json({ error: "CUSTOMER_OPS_INGEST_SECRET is not configured" }, 500);
+      return json({ error: "ANDES_RELAY_INGEST_SECRET is not configured" }, 500);
     }
 
     const auth = request.headers.get("authorization");
-    const key = request.headers.get("x-customer-ops-key");
+    const key =
+      request.headers.get("x-andes-relay-key") ??
+      request.headers.get("x-customer-ops-key");
     const bearer = auth?.startsWith("Bearer ") ? auth.slice(7) : undefined;
 
     if (bearer !== secret && key !== secret) {

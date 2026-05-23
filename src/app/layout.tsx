@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Signal Desk",
-  description: "Shared support, feedback, help search, and email operations.",
+  title: "Andes Relay",
+  description: "Open-source customer signal routing for SaaS products.",
 };
 
 export default function RootLayout({
