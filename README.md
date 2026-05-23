@@ -10,6 +10,13 @@ Shared support, feedback, help-search, and email operations for Arketix and Ande
 - Resend-ready transactional email queue
 - HTTP ingestion contract for every product app
 
+## Deployed Surfaces
+
+- Dashboard: https://customer-ops-hub.vercel.app
+- GitHub: https://github.com/Arketix/customer-ops-hub
+- Production Convex: https://confident-yak-264.convex.cloud
+- Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
+
 ## Local Setup
 
 ```bash
