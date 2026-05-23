@@ -16,7 +16,7 @@ export default function SignInPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f7f4ea] p-6">
-      <SignIn />
+      <SignIn routing="path" path="/sign-in" fallbackRedirectUrl="/" />
     </main>
   );
 }

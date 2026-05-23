@@ -16,7 +16,7 @@ export default function SignUpPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f7f4ea] p-6">
-      <SignUp />
+      <SignUp routing="path" path="/sign-up" fallbackRedirectUrl="/" />
     </main>
   );
 }
