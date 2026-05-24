@@ -3,10 +3,14 @@ import { Providers } from "./providers";
 
 export default function Home() {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const authConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
     <Providers convexUrl={convexUrl}>
-      <AndesRelayDashboard configured={Boolean(convexUrl)} />
+      <AndesRelayDashboard
+        authConfigured={authConfigured}
+        configured={Boolean(convexUrl)}
+      />
     </Providers>
   );
 }

@@ -16,6 +16,13 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import type { CSSProperties } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -497,108 +504,113 @@ function SearchTable() {
   );
 }
 
-function LiveDashboard() {
+function LiveDashboard({ authConfigured }: { authConfigured: boolean }) {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["key"]>(
     "tickets",
   );
   const overview = useQuery(api.dashboard.getOverview);
 
   return (
-    <main className="min-h-screen bg-[#f7f4ea] px-4 py-6 text-[#161410] sm:px-6 lg:px-8">
-      <section className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8d1bf] pb-5">
-          <div>
-            <p className="font-mono text-sm font-medium uppercase tracking-wide text-[#7b3f00]">
-              Andes Relay
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-              Open-source customer signal routing for SaaS products
-            </h1>
-          </div>
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded border border-[#d8d1bf] bg-[#fffdf7] px-3 font-mono text-sm font-medium text-[#5c5548]"
-            title="Convex updates this dashboard in realtime"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Live
-          </button>
-        </header>
-
-        <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <Metric
-            label="Open support"
-            value={overview?.openTickets ?? 0}
-            icon={LifeBuoy}
-          />
-          <Metric
-            label="New feedback"
-            value={overview?.newFeedback ?? 0}
-            icon={MessageSquareText}
-          />
-          <Metric
-            label="Queued emails"
-            value={overview?.queuedEmails ?? 0}
-            icon={Mail}
-          />
-          <Metric
-            label="Contacts"
-            value={overview?.contacts ?? 0}
-            icon={Users}
-          />
-          <Metric
-            label="Forms"
-            value={overview?.contactSubmissions ?? 0}
-            icon={ClipboardList}
-          />
-          <Metric
-            label="Accounts"
-            value={overview?.accountCreations ?? 0}
-            icon={UserPlus}
-          />
-          <Metric
-            label="Recent searches"
-            value={overview?.recentSearches ?? 0}
-            icon={Search}
-          />
-        </div>
-
-        <nav className="flex gap-1 overflow-x-auto border-b border-[#d8d1bf]">
-          {tabs.map(({ key, label, icon: Icon }) => (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "17rem",
+        } as CSSProperties
+      }
+    >
+      <AppSidebar
+        activeKey={activeTab}
+        authConfigured={authConfigured}
+        items={tabs}
+        onSelect={(key) => setActiveTab(key as (typeof tabs)[number]["key"])}
+      />
+      <SidebarInset className="min-h-screen bg-[#f7f4ea] text-[#161410]">
+        <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+          <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8d1bf] pb-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="-ml-1" />
+                <p className="font-mono text-sm font-medium uppercase tracking-wide text-[#7b3f00]">
+                  Andes Relay
+                </p>
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-normal">
+                Open-source customer signal routing for SaaS products
+              </h1>
+            </div>
             <button
-              key={key}
               type="button"
-              onClick={() => setActiveTab(key)}
-              className={`inline-flex h-11 items-center gap-2 border-b-2 px-3 font-mono text-sm font-medium ${
-                activeTab === key
-                  ? "border-[#7b3f00] text-[#161410]"
-                  : "border-transparent text-[#5c5548] hover:text-[#161410]"
-              }`}
+              className="inline-flex h-10 items-center gap-2 rounded border border-[#d8d1bf] bg-[#fffdf7] px-3 font-mono text-sm font-medium text-[#5c5548]"
+              title="Convex updates this dashboard in realtime"
             >
-              <Icon className="h-4 w-4" />
-              {label}
+              <RefreshCw className="h-4 w-4" />
+              Live
             </button>
-          ))}
-        </nav>
+          </header>
 
-        <section className="overflow-x-auto">
-          {activeTab === "tickets" && <TicketsTable />}
-          {activeTab === "feedback" && <FeedbackTable />}
-          {activeTab === "forms" && <ContactSubmissionsTable />}
-          {activeTab === "accounts" && <AccountCreationsTable />}
-          {activeTab === "contacts" && <ContactsTable />}
-          {activeTab === "emails" && <EmailTable />}
-          {activeTab === "searches" && <SearchTable />}
+          <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
+            <Metric
+              label="Open support"
+              value={overview?.openTickets ?? 0}
+              icon={LifeBuoy}
+            />
+            <Metric
+              label="New feedback"
+              value={overview?.newFeedback ?? 0}
+              icon={MessageSquareText}
+            />
+            <Metric
+              label="Queued emails"
+              value={overview?.queuedEmails ?? 0}
+              icon={Mail}
+            />
+            <Metric
+              label="Contacts"
+              value={overview?.contacts ?? 0}
+              icon={Users}
+            />
+            <Metric
+              label="Forms"
+              value={overview?.contactSubmissions ?? 0}
+              icon={ClipboardList}
+            />
+            <Metric
+              label="Accounts"
+              value={overview?.accountCreations ?? 0}
+              icon={UserPlus}
+            />
+            <Metric
+              label="Recent searches"
+              value={overview?.recentSearches ?? 0}
+              icon={Search}
+            />
+          </div>
+
+          <section className="overflow-x-auto">
+            {activeTab === "tickets" && <TicketsTable />}
+            {activeTab === "feedback" && <FeedbackTable />}
+            {activeTab === "forms" && <ContactSubmissionsTable />}
+            {activeTab === "accounts" && <AccountCreationsTable />}
+            {activeTab === "contacts" && <ContactsTable />}
+            {activeTab === "emails" && <EmailTable />}
+            {activeTab === "searches" && <SearchTable />}
+          </section>
         </section>
-      </section>
-    </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
-export function AndesRelayDashboard({ configured }: { configured: boolean }) {
+export function AndesRelayDashboard({
+  authConfigured,
+  configured,
+}: {
+  authConfigured: boolean;
+  configured: boolean;
+}) {
   if (!configured) {
     return <SetupScreen />;
   }
 
-  return <LiveDashboard />;
+  return <LiveDashboard authConfigured={authConfigured} />;
 }
