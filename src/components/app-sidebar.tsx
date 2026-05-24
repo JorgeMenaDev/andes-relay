@@ -46,7 +46,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" tooltip="Andes Relay">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#7b3f00] text-white">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-[4px] bg-[#201d1d] text-[#fdfcfc]">
                 <Mountain className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">

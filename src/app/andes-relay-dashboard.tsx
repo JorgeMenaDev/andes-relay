@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   ClipboardList,
   LifeBuoy,
+  ListFilter,
   Mail,
   MessageSquareText,
   RefreshCw,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -27,6 +29,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const tabs = [
+  { key: "all", label: "All", icon: ListFilter },
   { key: "tickets", label: "Support", icon: LifeBuoy },
   { key: "feedback", label: "Feedback", icon: MessageSquareText },
   { key: "forms", label: "Forms", icon: ClipboardList },
@@ -34,6 +37,23 @@ const tabs = [
   { key: "contacts", label: "Contacts", icon: Users },
   { key: "emails", label: "Email", icon: Mail },
   { key: "searches", label: "Search", icon: Search },
+] as const;
+
+const activityTypes = [
+  { key: "all", label: "All types" },
+  { key: "ticket", label: "Support" },
+  { key: "feedback", label: "Feedback" },
+  { key: "form", label: "Forms" },
+  { key: "account", label: "Accounts" },
+  { key: "contact", label: "Contacts" },
+  { key: "email", label: "Email" },
+  { key: "search", label: "Search" },
+] as const;
+
+const timeWindows = [
+  { key: "24h", label: "Latest 24 hours", ms: 24 * 60 * 60 * 1000 },
+  { key: "7d", label: "Latest 7 days", ms: 7 * 24 * 60 * 60 * 1000 },
+  { key: "all", label: "All time", ms: null },
 ] as const;
 
 const products = {
@@ -66,9 +86,34 @@ const formatDate = (value: number) =>
 
 function StatusPill({ children }: { children: string }) {
   return (
-    <span className="inline-flex h-6 items-center rounded border border-[#d8d1bf] bg-[#fffdf7] px-2 font-mono text-xs font-medium text-[#5c5548]">
+    <span className="inline-flex h-6 items-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-2 font-mono text-xs font-medium text-[#646262]">
       {children}
     </span>
+  );
+}
+
+function FilterSelect({
+  label,
+  onChange,
+  value,
+  children,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  value: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="flex min-w-44 flex-col gap-1 font-mono text-xs text-[#646262]">
+      <span>{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.currentTarget.value)}
+        className="h-10 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-3 text-sm text-[#201d1d] outline-none focus:border-[#646262]"
+      >
+        {children}
+      </select>
+    </label>
   );
 }
 
@@ -81,10 +126,10 @@ function SourceStamp({
 }) {
   return (
     <div className="flex min-w-40 flex-col gap-1">
-      <span className="text-sm font-semibold text-[#161410]">
+      <span className="text-sm font-semibold text-[#201d1d]">
         {companyName(companyKey)}
       </span>
-      <span className="font-mono text-xs text-[#5c5548]">
+      <span className="font-mono text-xs text-[#646262]">
         {productName(productKey)}
       </span>
     </div>
@@ -153,14 +198,14 @@ function Metric({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded border border-[#d8d1bf] bg-[#fffdf7] p-4">
+    <div className="rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] p-4">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-xs font-medium uppercase tracking-wide text-[#5c5548]">
+        <p className="font-mono text-xs font-medium uppercase text-[#646262]">
           {label}
         </p>
-        <Icon className="h-4 w-4 text-[#5c5548]" />
+        <Icon className="h-4 w-4 text-[#646262]" />
       </div>
-      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-[#161410]">
+      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-[#201d1d]">
         {value}
       </p>
     </div>
@@ -169,8 +214,8 @@ function Metric({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex min-h-48 items-center justify-center rounded border border-dashed border-[#c7bda8] bg-[#fffdf7]">
-      <p className="font-mono text-sm text-[#5c5548]">{label}</p>
+    <div className="flex min-h-48 items-center justify-center rounded-[4px] border border-dashed border-[rgba(15,0,0,0.12)] bg-[#f8f7f7]">
+      <p className="font-mono text-sm text-[#646262]">{label}</p>
     </div>
   );
 }
@@ -504,10 +549,94 @@ function SearchTable() {
   );
 }
 
+function ActivityFeed({
+  companyFilter,
+  productFilter,
+  timeFilter,
+  typeFilter,
+}: {
+  companyFilter: string;
+  productFilter: string;
+  timeFilter: string;
+  typeFilter: (typeof activityTypes)[number]["key"];
+}) {
+  const [loadedAt] = useState(() => Date.now());
+  const selectedWindow = timeWindows.find((item) => item.key === timeFilter);
+  const activity = useQuery(api.dashboard.listActivity, {
+    companyKey: companyFilter === "all" ? undefined : companyFilter,
+    limit: 100,
+    productKey: productFilter === "all" ? undefined : productFilter,
+    since:
+      selectedWindow?.ms === null || selectedWindow === undefined
+        ? undefined
+        : loadedAt - selectedWindow.ms,
+    type: typeFilter === "all" ? undefined : typeFilter,
+  });
+
+  if (activity === undefined) {
+    return <EmptyState label="Loading activity..." />;
+  }
+
+  if (activity.length === 0) {
+    return <EmptyState label="No activity for these filters." />;
+  }
+
+  return (
+    <div className="overflow-hidden border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc]">
+      <table className="w-full min-w-[860px] text-left text-sm">
+        <thead className="border-b border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262]">
+          <tr>
+            <th className="px-4 py-3 font-medium">Signal</th>
+            <th className="px-4 py-3 font-medium">Source</th>
+            <th className="px-4 py-3 font-medium">Type</th>
+            <th className="px-4 py-3 font-medium">Status</th>
+            <th className="px-4 py-3 font-medium">When</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
+          {activity.map((item) => (
+            <tr key={`${item.type}-${item._id}`} className="align-top">
+              <td className="px-4 py-3">
+                <p className="font-medium text-[#201d1d]">{item.title}</p>
+                <p className="mt-1 line-clamp-2 max-w-xl text-[#646262]">
+                  {item.description}
+                </p>
+              </td>
+              <td className="px-4 py-3">
+                <SourceStamp
+                  companyKey={item.companyKey}
+                  productKey={item.productKey}
+                />
+              </td>
+              <td className="px-4 py-3">
+                <StatusPill>
+                  {activityTypes.find((type) => type.key === item.type)
+                    ?.label ?? item.type}
+                </StatusPill>
+              </td>
+              <td className="px-4 py-3">
+                <StatusPill>{item.statusLabel}</StatusPill>
+              </td>
+              <td className="px-4 py-3 font-mono text-xs text-[#646262]">
+                {formatDate(item.occurredAt)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function LiveDashboard({ authConfigured }: { authConfigured: boolean }) {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["key"]>(
-    "tickets",
+    "all",
   );
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("24h");
+  const [typeFilter, setTypeFilter] =
+    useState<(typeof activityTypes)[number]["key"]>("all");
   const overview = useQuery(api.dashboard.getOverview);
 
   return (
@@ -524,23 +653,23 @@ function LiveDashboard({ authConfigured }: { authConfigured: boolean }) {
         items={tabs}
         onSelect={(key) => setActiveTab(key as (typeof tabs)[number]["key"])}
       />
-      <SidebarInset className="min-h-screen bg-[#f7f4ea] text-[#161410]">
+      <SidebarInset className="min-h-screen bg-[#fdfcfc] text-[#201d1d]">
         <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-          <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#d8d1bf] pb-5">
+          <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[rgba(15,0,0,0.12)] pb-5">
             <div>
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
-                <p className="font-mono text-sm font-medium uppercase tracking-wide text-[#7b3f00]">
+                <p className="font-mono text-sm font-medium uppercase text-[#646262]">
                   Andes Relay
                 </p>
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-normal">
+              <h1 className="mt-3 max-w-4xl font-mono text-3xl font-bold leading-normal tracking-normal">
                 Open-source customer signal routing for SaaS products
               </h1>
             </div>
             <button
               type="button"
-              className="inline-flex h-10 items-center gap-2 rounded border border-[#d8d1bf] bg-[#fffdf7] px-3 font-mono text-sm font-medium text-[#5c5548]"
+              className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-3 font-mono text-sm font-medium text-[#424245]"
               title="Convex updates this dashboard in realtime"
             >
               <RefreshCw className="h-4 w-4" />
@@ -586,7 +715,68 @@ function LiveDashboard({ authConfigured }: { authConfigured: boolean }) {
             />
           </div>
 
+          {activeTab === "all" && (
+            <div className="flex flex-wrap gap-3 border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] p-4">
+              <FilterSelect
+                label="Window"
+                value={timeFilter}
+                onChange={setTimeFilter}
+              >
+                {timeWindows.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.label}
+                  </option>
+                ))}
+              </FilterSelect>
+              <FilterSelect
+                label="Type"
+                value={typeFilter}
+                onChange={(value) =>
+                  setTypeFilter(value as (typeof activityTypes)[number]["key"])
+                }
+              >
+                {activityTypes.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.label}
+                  </option>
+                ))}
+              </FilterSelect>
+              <FilterSelect
+                label="Company"
+                value={companyFilter}
+                onChange={setCompanyFilter}
+              >
+                <option value="all">All companies</option>
+                {Object.entries(companies).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </FilterSelect>
+              <FilterSelect
+                label="Product"
+                value={productFilter}
+                onChange={setProductFilter}
+              >
+                <option value="all">All products</option>
+                {Object.entries(products).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </FilterSelect>
+            </div>
+          )}
+
           <section className="overflow-x-auto">
+            {activeTab === "all" && (
+              <ActivityFeed
+                companyFilter={companyFilter}
+                productFilter={productFilter}
+                timeFilter={timeFilter}
+                typeFilter={typeFilter}
+              />
+            )}
             {activeTab === "tickets" && <TicketsTable />}
             {activeTab === "feedback" && <FeedbackTable />}
             {activeTab === "forms" && <ContactSubmissionsTable />}
