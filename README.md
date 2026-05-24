@@ -10,7 +10,7 @@ This repository is the first OpenAndes project. It includes a Next.js dashboard,
 
 This project is already running as the first real use case across Jorge Mena's production products:
 
-- Dashboard: https://customer-ops-hub.vercel.app
+- Dashboard: https://andesrelay.com
 - GitHub: https://github.com/JorgeMenaDev/andes-relay
 - Production Convex: https://confident-yak-264.convex.cloud
 - Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
@@ -24,7 +24,7 @@ Current production examples:
 
 Use this section for the current internal setup. The public SDK/domain work is deferred in `BACKLOG.md`.
 
-- Live dashboard: https://customer-ops-hub.vercel.app
+- Live dashboard: https://andesrelay.com
 - Public repository: https://github.com/JorgeMenaDev/andes-relay
 - Production Convex: https://confident-yak-264.convex.cloud
 - Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
@@ -56,11 +56,11 @@ Verify Andy:
 
 ## Dashboard Access
 
-The dashboard is Clerk-protected and currently intended for Jorge only. The current production URL is still `customer-ops-hub.vercel.app`, protected by the temporary Clerk tenant used during the first production setup. Keep Clerk enabled until a final custom domain and dedicated Clerk production app are provisioned.
+The dashboard is Clerk-protected and currently intended for Jorge only. Production auth uses the dedicated `Andes Relay` Clerk app in the Arketix Clerk workspace, with `andesrelay.com` as the production domain.
 
 Login path:
 
-1. Open https://customer-ops-hub.vercel.app/sign-in.
+1. Open https://andesrelay.com/sign-in.
 2. Sign in with Jorge's allowed Clerk user.
 3. Confirm the dashboard renders live Convex data.
 

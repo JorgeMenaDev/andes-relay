@@ -14,10 +14,18 @@ const isPublicRoute = createRouteMatcher([
 
 const clerkProtectedProxy = hasClerkConfig
   ? clerkMiddleware(async (auth, request) => {
-    if (!isPublicRoute(request)) {
-    await auth.protect();
-  }
-  })
+      if (isPublicRoute(request)) {
+        return NextResponse.next();
+      }
+
+      const { userId } = await auth();
+
+      if (!userId) {
+        return NextResponse.redirect(new URL("/sign-in", request.url));
+      }
+
+      return NextResponse.next();
+    })
   : null;
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {

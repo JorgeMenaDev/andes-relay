@@ -8,10 +8,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - Always use Bun in this repo. Do not use npm, pnpm, or yarn.
 - OpenAndes is the umbrella brand; Andes Relay is this project.
-- The app is currently deployed at `https://customer-ops-hub.vercel.app`.
+- The app is currently deployed at `https://andesrelay.com`.
 - Production Convex is `https://confident-yak-264.convex.cloud`.
 - Production HTTP ingestion is `https://confident-yak-264.convex.site/ingest`.
-- Production dashboard auth is Clerk-protected. The current Vercel URL uses a Clerk test tenant until the final Andes Relay custom domain / production Clerk app is provisioned.
+- Production dashboard auth is Clerk-protected by the dedicated `Andes Relay` Clerk app in the Arketix Clerk workspace.
 - Keep support tickets, feedback, contact forms, account creations, help searches, and email intents as separate concepts.
 - Keep product app integration through `@openandes/relay-sdk`; do not reintroduce copy/pasted per-product ingestion clients after the package is published.
 - The SDK currently lives at `packages/relay-sdk` and is consumed locally with Bun workspaces.
