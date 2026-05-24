@@ -90,6 +90,7 @@ function ClerkUserMenu() {
   const { openUserProfile, signOut } = useClerk();
   const { user } = useUser();
   const email = user?.primaryEmailAddress?.emailAddress ?? "Signed in";
+  const displayName = user?.fullName ?? email;
 
   return (
     <SidebarMenu>
@@ -97,7 +98,7 @@ function ClerkUserMenu() {
         <SidebarMenuButton size="lg" tooltip={email}>
           <UserCircle className="size-5" />
           <div className="flex min-w-0 flex-col leading-none">
-            <span className="truncate text-sm font-medium">Jorge Mena</span>
+            <span className="truncate text-sm font-medium">{displayName}</span>
             <span className="truncate font-mono text-xs text-sidebar-foreground/65">
               {email}
             </span>

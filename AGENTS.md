@@ -8,10 +8,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - Always use Bun in this repo. Do not use npm, pnpm, or yarn.
 - OpenAndes is the umbrella brand; Andes Relay is this project.
-- The app is currently deployed at `https://andesrelay.com`.
-- Production Convex is `https://confident-yak-264.convex.cloud`.
-- Production HTTP ingestion is `https://confident-yak-264.convex.site/ingest`.
-- Production dashboard auth is Clerk-protected by the dedicated `Andes Relay` Clerk app in the Arketix Clerk workspace.
 - Keep support tickets, feedback, contact forms, account creations, help searches, and email intents as separate concepts.
 - Keep product app integration through `@openandes/relay-sdk`; do not reintroduce copy/pasted per-product ingestion clients after the package is published.
 - The SDK currently lives at `packages/relay-sdk` and is consumed locally with Bun workspaces.
@@ -19,6 +15,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Root `bun run build` runs `prebuild`, which builds the SDK before Next.js builds. Preserve that ordering.
 - Do not commit `.env.local`, ingestion secrets, Resend keys, Clerk keys, or npm tokens.
 - Generated SDK `dist` output is ignored and should not be committed.
+- Do not hardcode private company, product, account, email, or workspace names in public docs or source. Use generic examples in the repo and source labels in the dashboard settings.
 
 ## Verification
 

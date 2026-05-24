@@ -12,6 +12,7 @@ import type * as dashboard from "../dashboard.js";
 import type * as emails from "../emails.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
+import type * as sources from "../sources.js";
 import type * as tickets from "../tickets.js";
 import type * as validators from "../validators.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   http: typeof http;
   ingest: typeof ingest;
+  sources: typeof sources;
   tickets: typeof tickets;
   validators: typeof validators;
 }>;

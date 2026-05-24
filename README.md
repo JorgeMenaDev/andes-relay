@@ -2,76 +2,18 @@
 
 Open-source customer signal routing for SaaS products.
 
-Andes Relay gives product teams one standard way to collect support tickets, feedback, contact form submissions, account-created events, help searches, and email intents across multiple apps.
+Andes Relay gives product teams one standard way to collect support tickets,
+feedback, contact form submissions, account-created events, help searches, and
+email intents across multiple apps.
 
-This repository is the first OpenAndes project. It includes a Next.js dashboard, a Convex backend, and a reusable TypeScript SDK.
+It includes:
 
-## Status
-
-This project is already running as the first real use case across Jorge Mena's production products:
-
-- Dashboard: https://andesrelay.com
-- GitHub: https://github.com/JorgeMenaDev/andes-relay
-- Production Convex: https://confident-yak-264.convex.cloud
-- Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
-
-Current production examples:
-
-- `acredix.cl` sends contact form submissions into Andes Relay.
-- `andypartner.com` sends Clerk account-created events into Andes Relay.
-
-## Internal Runbook
-
-Use this section for the current internal setup. The public SDK/domain work is deferred in `BACKLOG.md`.
-
-- Live dashboard: https://andesrelay.com
-- Public repository: https://github.com/JorgeMenaDev/andes-relay
-- Production Convex: https://confident-yak-264.convex.cloud
-- Production ingestion endpoint: https://confident-yak-264.convex.site/ingest
-- Connected products:
-  - Arketix / Acredix landing: `contact.form.submitted`
-  - Andesphere / Andy Partner: `user.account.created`
-
-Submit the production POC events:
-
-```bash
-ANDES_RELAY_ENDPOINT=https://confident-yak-264.convex.site \
-ANDES_RELAY_INGEST_SECRET=<shared secret> \
-bun run poc:submit
-```
-
-The command should return `created` for new event ids or `duplicate` for existing POC ids, then print the dashboard overview.
-
-Verify Acredix:
-
-1. Submit the Acredix contact form or POST to `https://acredix.cl/api/contact`.
-2. Open the dashboard Forms tab.
-3. Confirm the new form submission shows company `Arketix` and product `Acredix Landing`.
-
-Verify Andy:
-
-1. Create a test Clerk signup event in Andy production.
-2. Open the dashboard Accounts tab.
-3. Confirm the new record shows company `Andesphere`, product `Andy Partner`, and source `clerk`.
-
-## Dashboard Access
-
-The dashboard is Clerk-protected and currently intended for Jorge only. Production auth uses the dedicated `Andes Relay` Clerk app in the Arketix Clerk workspace, with `andesrelay.com` as the production domain.
-
-Login path:
-
-1. Open https://andesrelay.com/sign-in.
-2. Sign in with Jorge's allowed Clerk user.
-3. Confirm the dashboard renders live Convex data.
-
-## Stack
-
-- Next.js App Router dashboard
-- Convex source-of-truth backend
-- Clerk authentication
-- Resend-ready transactional email queue
-- Public TypeScript SDK
-- HTTP ingestion contract for any product app
+- A Clerk-protected Next.js dashboard.
+- A Convex backend with HTTP ingestion.
+- A reusable TypeScript SDK at `packages/relay-sdk`.
+- Dashboard source settings for company/product labels.
+- A unified activity view with filters for time window, signal type, company,
+  and product.
 
 ## How It Works
 
@@ -79,23 +21,50 @@ Login path:
 flowchart LR
   product["Product apps"] --> sdk["@openandes/relay-sdk"]
   sdk --> ingest["Convex HTTP /ingest"]
-  ingest --> db["Convex tables\ncontacts, support, feedback,\nforms, accounts, searches, emailJobs"]
+  ingest --> db["Convex tables"]
   db --> dashboard["Andes Relay dashboard"]
-  db --> email["Optional email sender"]
 ```
 
 Each product sends standardized events:
 
-- `support.ticket.created` creates a support ticket.
-- `support.ticket.message` adds a support ticket message.
-- `contact.form.submitted` records a public contact form submission.
-- `user.account.created` records a new account/user signup.
-- `feedback.created` creates a feedback item.
-- `help.search` records what users searched for in help/support.
-- `email.intent.created` queues an email job.
-- `email.preference.updated` updates contact email preferences.
+- `support.ticket.created`
+- `support.ticket.message`
+- `contact.form.submitted`
+- `user.account.created`
+- `feedback.created`
+- `help.search`
+- `email.intent.created`
+- `email.preference.updated`
 
-Support and feedback are intentionally separate records. Contact forms and account creations are also first-class records, because those signals answer different operational questions.
+Support, feedback, contact forms, account creations, help searches, and email
+intents are intentionally separate records.
+
+## Dashboard
+
+The dashboard has these views:
+
+- `All`: one unified feed across all signal types. It defaults to the latest 24
+  hours.
+- `Support`
+- `Feedback`
+- `Forms`
+- `Accounts`
+- `Contacts`
+- `Email`
+- `Search`
+- `Settings`
+
+The `Settings` view lets an operator:
+
+- Add or update company display labels.
+- Add or update product display labels.
+- Remove company/product labels.
+- See discovered source keys from ingested events.
+- See the ingest endpoint, product environment variables, and SDK install
+  command.
+
+Removing a company or product in settings removes the dashboard label, not the
+historical ingested events.
 
 ## Local Setup
 
@@ -106,14 +75,13 @@ bun run poc:submit
 bun run dev
 ```
 
-`bun run poc:submit` submits sample events for the first real use case: an Andy account event, Andy support/search events, an Acredix contact form, Acredix feedback, and an Acredix email intent.
-
 ## Environment
 
 Dashboard:
 
 ```bash
 NEXT_PUBLIC_CONVEX_URL=
+NEXT_PUBLIC_CONVEX_SITE_URL=
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -123,45 +91,36 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 Ingestion:
 
 ```bash
-NEXT_PUBLIC_CONVEX_SITE_URL=
 ANDES_RELAY_INGEST_SECRET=
 ```
 
-`CUSTOMER_OPS_INGEST_SECRET` is still accepted as a temporary compatibility fallback for the first production integrations.
-
-Product apps only need:
+Product apps need server-side environment variables:
 
 ```bash
 ANDES_RELAY_ENDPOINT=https://your-convex-site.convex.site
 ANDES_RELAY_INGEST_SECRET=<shared secret>
 ```
 
-The first production integrations still keep `CUSTOMER_OPS_ENDPOINT` and `CUSTOMER_OPS_INGEST_SECRET` as temporary fallbacks while naming settles.
-
-## Ingestion Contract
-
-Product apps submit events to the Convex HTTP action:
-
-```bash
-curl -X POST "$ANDES_RELAY_ENDPOINT/ingest" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $ANDES_RELAY_INGEST_SECRET" \
-  -d '{"eventId":"example","type":"help.search","occurredAt":0,"source":{"companyKey":"acme","productKey":"web"},"search":{"query":"support","resultCount":1}}'
-```
-
-`companyKey` and `productKey` are plain strings. Use stable slugs such as `acme`, `acme-web`, `mobile-app`, or `docs`.
+Keep `ANDES_RELAY_INGEST_SECRET` server-side only. Do not expose it in browser
+code.
 
 ## SDK Package
 
 The SDK lives in `packages/relay-sdk` and is named `@openandes/relay-sdk`.
 
-Inside this repo, it is consumed as a Bun workspace dependency:
+Inside this repo it is consumed as a Bun workspace dependency:
 
 ```json
 "@openandes/relay-sdk": "workspace:*"
 ```
 
-Use it from product apps like this:
+Product apps install it with Bun after publishing:
+
+```bash
+bun add @openandes/relay-sdk
+```
+
+Example:
 
 ```ts
 import { createAndesRelayClient } from "@openandes/relay-sdk";
@@ -176,18 +135,44 @@ const relay = createAndesRelayClient({
 
 await relay.submitContactForm({
   eventId: "contact-123",
-  contact: { email: "maria@example.com", locale: "es" },
+  contact: { email: "user@example.com", locale: "en" },
   subject: "Pricing question",
   message: "Can we talk about pricing?",
-  company: "Acme SpA",
+  company: "Example Co",
 });
 ```
 
-The same client has `submitSupportTicket`, `submitFeedback`, `submitContactForm`, `trackAccountCreated`, `trackHelpSearch`, and `queueEmail`.
+The client exposes:
 
-## Public Publishing
+- `submitEvent`
+- `submitSupportTicket`
+- `submitFeedback`
+- `submitContactForm`
+- `trackAccountCreated`
+- `trackHelpSearch`
+- `queueEmail`
 
-`packages/relay-sdk/package.json` is configured for a public scoped npm package:
+## Direct HTTP Ingestion
+
+```bash
+curl -X POST "$ANDES_RELAY_ENDPOINT/ingest" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ANDES_RELAY_INGEST_SECRET" \
+  -d '{
+    "eventId":"example-help-search-1",
+    "type":"help.search",
+    "occurredAt":1770000000000,
+    "source":{"companyKey":"acme","productKey":"web"},
+    "search":{"query":"billing","resultCount":3}
+  }'
+```
+
+`companyKey` and `productKey` are stable source slugs. You can rename their
+display labels from the dashboard Settings view without changing product code.
+
+## Publishing
+
+`packages/relay-sdk/package.json` is configured for a public scoped package:
 
 ```json
 "publishConfig": {
@@ -195,40 +180,21 @@ The same client has `submitSupportTicket`, `submitFeedback`, `submitContactForm`
 }
 ```
 
-Publish with Bun after the package name/scope is confirmed:
+Publish with Bun after confirming the package scope:
 
 ```bash
 bun publish --cwd packages/relay-sdk
 ```
 
-Then install it in product apps with Bun:
+## Verification
 
 ```bash
-bun add @openandes/relay-sdk
+bun run check
+bun run poc:submit
 ```
 
-## First Use Case
-
-The first production use case is Jorge Mena's own products:
-
-- Arketix / Acredix: `https://acredix.cl/api/contact` sends `contact.form.submitted`.
-- Andesphere / Andy Partner: Clerk `user.created` webhooks send `user.account.created`.
-
-That gives Andes Relay a real portfolio story: it is not a toy dashboard; it is running against production SaaS surfaces and centralizing customer signals across companies.
-
-## Product Integration Checklist
-
-For each product:
-
-1. Install `@openandes/relay-sdk` after publishing, or submit directly to `/ingest` while the SDK is local.
-2. Add `ANDES_RELAY_ENDPOINT` and `ANDES_RELAY_INGEST_SECRET`.
-3. Send support tickets through `submitSupportTicket`.
-4. Send public contact forms through `submitContactForm`.
-5. Send account-created events through `trackAccountCreated`.
-6. Send product feedback through `submitFeedback`.
-7. Send help/support searches through `trackHelpSearch`.
-8. Queue standardized transactional emails through `queueEmail`.
-9. Verify the event appears in the Andes Relay dashboard.
+`bun run poc:submit` submits generic sample events through the SDK and prints
+the dashboard overview.
 
 ## License
 

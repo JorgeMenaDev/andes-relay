@@ -25,6 +25,23 @@ const preferences = v.object({
 });
 
 export default defineSchema({
+  sourceCompanies: defineTable({
+    key: v.string(),
+    name: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+
+  sourceProducts: defineTable({
+    key: v.string(),
+    name: v.string(),
+    companyKey: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_key", ["key"])
+    .index("by_company_key", ["companyKey"]),
+
   contacts: defineTable({
     email: v.string(),
     normalizedEmail: v.string(),

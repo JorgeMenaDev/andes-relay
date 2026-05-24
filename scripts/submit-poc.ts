@@ -21,130 +21,129 @@ if (!endpoint || !secret) {
 
 const now = Date.now();
 
-const andy = createAndesRelayClient({
+const supportApp = createAndesRelayClient({
   endpoint,
   secret,
-  companyKey: "andesphere",
-  productKey: "andy-partner",
+  companyKey: "example-co",
+  productKey: "support-app",
   environment: "production",
 });
 
-const acredix = createAndesRelayClient({
+const salesSite = createAndesRelayClient({
   endpoint,
   secret,
-  companyKey: "arketix",
-  productKey: "acredix",
+  companyKey: "example-co",
+  productKey: "sales-site",
   environment: "production",
 });
 
 const submissions = [
   () =>
-    andy.trackAccountCreated({
-      eventId: "andy-account-created-001",
+    supportApp.trackAccountCreated({
+      eventId: "support-app-account-created-001",
       occurredAt: now - 150_000,
-      externalId: "andy_user_001",
-      email: "sofia@example.com",
-      name: "Sofia Alvarez",
-      locale: "es",
+      externalId: "support_app_user_001",
+      email: "user@example.com",
+      name: "Example User",
+      locale: "en",
       source: "clerk",
       context: {
-        currentUrl: "https://andypartner.com/sign-up",
+        currentUrl: "https://app.example.com/sign-up",
         userAgent: "poc-script",
-        accountId: "andy_account_001",
+        accountId: "support_app_account_001",
       },
     }),
   () =>
-    andy.submitSupportTicket({
-      eventId: "andy-support-001",
+    supportApp.submitSupportTicket({
+      eventId: "support-app-ticket-001",
       occurredAt: now - 120_000,
       contact: {
-        email: "sofia@example.com",
-        name: "Sofia Alvarez",
-        locale: "es",
-        externalId: "andy_user_001",
+        email: "user@example.com",
+        name: "Example User",
+        locale: "en",
+        externalId: "support_app_user_001",
       },
       context: {
-        currentUrl: "https://app.andy.com/dashboard/inbox",
+        currentUrl: "https://app.example.com/dashboard/inbox",
         userAgent: "poc-script",
-        accountId: "andy_account_001",
+        accountId: "support_app_account_001",
       },
-      externalId: "andy-ticket-001",
-      title: "WhatsApp messages are not syncing",
-      message:
-        "The dashboard shows the conversation but the latest reply is missing.",
-      topic: "whatsapp",
+      externalId: "support-app-ticket-001",
+      title: "Messages are not syncing",
+      message: "The dashboard shows the conversation but the latest reply is missing.",
+      topic: "inbox",
       priority: "high",
     }),
   () =>
-    andy.trackHelpSearch({
-      eventId: "andy-help-search-001",
+    supportApp.trackHelpSearch({
+      eventId: "support-app-help-search-001",
       occurredAt: now - 90_000,
       contact: {
-        email: "sofia@example.com",
-        name: "Sofia Alvarez",
-        locale: "es",
-        externalId: "andy_user_001",
+        email: "user@example.com",
+        name: "Example User",
+        locale: "en",
+        externalId: "support_app_user_001",
       },
       context: {
-        currentUrl: "https://app.andy.com/help",
+        currentUrl: "https://app.example.com/help",
         userAgent: "poc-script",
       },
-      query: "como conectar whatsapp",
+      query: "connect inbox",
       resultCount: 2,
     }),
   () =>
-    acredix.submitContactForm({
-      eventId: "acredix-contact-form-001",
+    salesSite.submitContactForm({
+      eventId: "sales-site-contact-form-001",
       occurredAt: now - 75_000,
       contact: {
-        email: "maria@example.com",
-        name: "Maria Torres",
-        locale: "es",
-        externalId: "acredix_contact_001",
+        email: "buyer@example.com",
+        name: "Example Buyer",
+        locale: "en",
+        externalId: "sales_site_contact_001",
       },
       context: {
-        currentUrl: "https://acredix.cl/contacto",
+        currentUrl: "https://example.com/contact",
         userAgent: "poc-script",
       },
-      externalId: "acredix-contact-form-001",
-      subject: "Financiamiento para empresa",
-      message: "Quiero conversar sobre opciones de financiamiento.",
-      company: "Torres SpA",
-      page: "https://acredix.cl/contacto",
+      externalId: "sales-site-contact-form-001",
+      subject: "Pricing question",
+      message: "I want to talk about the product.",
+      company: "Example Buyer Co",
+      page: "https://example.com/contact",
     }),
   () =>
-    acredix.submitFeedback({
-      eventId: "acredix-feedback-001",
+    salesSite.submitFeedback({
+      eventId: "sales-site-feedback-001",
       occurredAt: now - 60_000,
       contact: {
-        email: "maria@example.com",
-        name: "Maria Torres",
-        locale: "es",
-        externalId: "acredix_user_001",
+        email: "buyer@example.com",
+        name: "Example Buyer",
+        locale: "en",
+        externalId: "sales_site_user_001",
       },
       context: {
-        currentUrl: "https://app.acredix.com/deals/42",
+        currentUrl: "https://app.example.com/report/42",
         userAgent: "poc-script",
       },
-      externalId: "acredix-feedback-001",
-      title: "Add lender comparison export",
-      message: "It would help if the comparison table could export to PDF.",
+      externalId: "sales-site-feedback-001",
+      title: "Add export",
+      message: "It would help if the table could export to PDF.",
       type: "feature_request",
     }),
   () =>
-    acredix.queueEmail({
-      eventId: "acredix-email-001",
+    salesSite.queueEmail({
+      eventId: "sales-site-email-001",
       occurredAt: now - 30_000,
       contact: {
-        email: "maria@example.com",
-        name: "Maria Torres",
-        locale: "es",
-        externalId: "acredix_user_001",
+        email: "buyer@example.com",
+        name: "Example Buyer",
+        locale: "en",
+        externalId: "sales_site_user_001",
       },
-      recipientEmail: "maria@example.com",
+      recipientEmail: "buyer@example.com",
       templateKey: "support.followup",
-      subject: "We received your Acredix request",
-      locale: "es",
+      subject: "We received your request",
+      locale: "en",
     }),
 ] as const;
 

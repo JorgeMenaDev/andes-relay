@@ -1,19 +1,20 @@
 # Andes Relay Backlog
 
-This backlog is intentionally deferred. The current priority is making Andes Relay work reliably for Jorge's own production products first.
+This backlog is intentionally deferred. The current priority is making Andes
+Relay reliable for real product integrations before treating it like a public
+launch.
 
 ## Later
 
-- Add a custom domain and decide whether to rename or replace the Vercel project slug.
 - Publish `@openandes/relay-sdk` publicly with Bun.
 - Migrate product apps from direct HTTP helpers to the published SDK.
 - Add reusable support and feedback widgets for product apps.
 - Add the Resend email sending worker for queued email jobs.
-- Polish the dashboard after the internal workflow is proven useful.
-- Add screenshots and open-source cleanup before sharing the project publicly.
+- Add screenshots and public docs polish.
+- Add a first-class MCP server if there is a concrete operator workflow for it.
 
 ## Not Now
 
-- No npm publishing until the internal production loop is stable.
-- No custom domain work until dashboard access and ingestion are proven.
-- No public launch work until Acredix and Andy are both boringly reliable.
+- No npm publishing until the production ingestion loop is stable.
+- No public launch polish until the dashboard, SDK, and settings workflow are
+  boringly reliable.
