@@ -20,7 +20,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
 import {
-  CreateOrganization,
+  OrganizationList,
   OrganizationProfile,
   OrganizationSwitcher,
   useOrganization,
@@ -566,9 +566,10 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
               {organization ? (
                 <OrganizationProfile routing="hash" />
               ) : (
-                <CreateOrganization
+                <OrganizationList
                   afterCreateOrganizationUrl="/"
-                  routing="hash"
+                  afterSelectOrganizationUrl="/"
+                  hidePersonal
                 />
               )}
             </div>
