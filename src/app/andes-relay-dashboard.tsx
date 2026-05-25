@@ -60,6 +60,7 @@ const timeWindows = [
 ] as const;
 
 const vercelProjectUrl = "https://vercel.com/arketix/customer-ops-hub";
+const reactGrabUrl = "https://www.react-grab.com/";
 
 type SourceSettings = {
   discoveredProducts: { productKey: string; workspaceKey: string }[];
@@ -1283,6 +1284,7 @@ function LiveDashboard({
           setWorkspaceFilter(value);
           setProductFilter("all");
         }}
+        reactGrabUrl={reactGrabUrl}
         selectedWorkspaceName={selectedWorkspaceName}
         selectedWorkspaceValue={workspaceFilter}
         vercelUrl={vercelProjectUrl}
@@ -1333,6 +1335,15 @@ function LiveDashboard({
               >
                 <ExternalLink className="h-4 w-4" />
                 Vercel
+              </a>
+              <a
+                href={reactGrabUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-white/10 bg-white/5 px-3 font-mono text-sm font-medium text-white/80 hover:bg-white/10"
+              >
+                <ExternalLink className="h-4 w-4" />
+                React Grab
               </a>
               <button
                 type="button"
