@@ -64,6 +64,7 @@ export default defineSchema({
     products: v.array(v.string()),
     externalRefs: v.array(externalRef),
     emailPreferences: v.optional(preferences),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_normalized_email", ["normalizedEmail"]),
@@ -94,6 +95,7 @@ export default defineSchema({
     status: ticketStatus,
     locale: v.optional(locale),
     context: v.optional(context),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -119,6 +121,7 @@ export default defineSchema({
     status: feedbackStatus,
     locale: v.optional(locale),
     context: v.optional(context),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -137,6 +140,7 @@ export default defineSchema({
     phone: v.optional(v.string()),
     locale: v.optional(locale),
     context: v.optional(context),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_product_created_at", ["companyKey", "productKey", "createdAt"])
@@ -153,6 +157,7 @@ export default defineSchema({
     plan: v.optional(v.string()),
     source: v.optional(v.string()),
     context: v.optional(context),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_product_created_at", ["companyKey", "productKey", "createdAt"])
@@ -166,6 +171,7 @@ export default defineSchema({
     resultCount: v.optional(v.number()),
     locale: v.optional(locale),
     currentUrl: v.optional(v.string()),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
   }).index("by_product_created_at", ["companyKey", "productKey", "createdAt"]),
 
@@ -179,6 +185,7 @@ export default defineSchema({
     locale: v.optional(locale),
     error: v.optional(v.string()),
     providerMessageId: v.optional(v.string()),
+    archivedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
     sentAt: v.optional(v.number()),

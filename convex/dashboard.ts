@@ -32,26 +32,31 @@ const matchesContactSource = (
 const inWindow = (timestamp: number, since?: number) =>
   since === undefined || timestamp >= since;
 
+const isVisible = (item: { archivedAt?: number }) => !item.archivedAt;
+
 const sourceArgs = {
   productKey: v.optional(v.string()),
   workspaceKey: v.optional(v.string()),
 };
 
-const filterBySource = <T extends { companyKey?: string; productKey?: string }>(
-  items: T[],
-  args: { productKey?: string; workspaceKey?: string },
-) =>
-  items.filter((item) =>
-    matchesSource(item, args.workspaceKey, args.productKey),
-  );
-
-const filterContactsBySource = <
-  T extends { companies?: string[]; products?: string[] },
+const filterBySource = <
+  T extends { archivedAt?: number; companyKey?: string; productKey?: string },
 >(
   items: T[],
   args: { productKey?: string; workspaceKey?: string },
 ) =>
   items.filter((item) =>
+    isVisible(item) && matchesSource(item, args.workspaceKey, args.productKey),
+  );
+
+const filterContactsBySource = <
+  T extends { archivedAt?: number; companies?: string[]; products?: string[] },
+>(
+  items: T[],
+  args: { productKey?: string; workspaceKey?: string },
+) =>
+  items.filter((item) =>
+    isVisible(item) &&
     matchesContactSource(item, args.workspaceKey, args.productKey),
   );
 
@@ -264,6 +269,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
+            isVisible(item) &&
             matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
@@ -278,6 +284,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
+            isVisible(item) &&
             matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
@@ -292,6 +299,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.createdAt, args.since) &&
+            isVisible(item) &&
             matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
@@ -306,6 +314,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.createdAt, args.since) &&
+            isVisible(item) &&
             matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
@@ -320,6 +329,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
+            isVisible(item) &&
             matchesContactSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
@@ -336,6 +346,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
+            isVisible(item) &&
             matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
@@ -350,6 +361,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.createdAt, args.since) &&
+            isVisible(item) &&
             matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({

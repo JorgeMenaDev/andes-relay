@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  Archive,
   CheckCircle2,
   ClipboardList,
   KeyRound,
@@ -10,6 +11,7 @@ import {
   Mail,
   MessageSquareText,
   Moon,
+  MoreHorizontal,
   Search,
   Settings,
   Sun,
@@ -17,6 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
@@ -85,6 +88,15 @@ type SourceFilter = {
   productKey?: string;
   workspaceKey?: string;
 };
+
+type ArchiveTarget =
+  | { id: Id<"supportTickets">; type: "ticket" }
+  | { id: Id<"feedbackItems">; type: "feedback" }
+  | { id: Id<"contactSubmissions">; type: "form" }
+  | { id: Id<"accountCreations">; type: "account" }
+  | { id: Id<"contacts">; type: "contact" }
+  | { id: Id<"emailJobs">; type: "email" }
+  | { id: Id<"helpSearches">; type: "search" };
 
 type ThemeMode = "dark" | "light";
 
@@ -156,6 +168,64 @@ function StatusPill({ children }: { children: string }) {
     <span className="inline-flex h-6 items-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-2 font-mono text-xs font-medium text-[#646262] dark:border-white/10 dark:bg-white/5 dark:text-white/65">
       {children}
     </span>
+  );
+}
+
+function SignalActions({
+  label,
+  target,
+}: {
+  label: string;
+  target: ArchiveTarget;
+}) {
+  const archiveSignal = useMutation(api.signals.archive);
+  const [archiving, setArchiving] = useState(false);
+
+  const archive = async () => {
+    if (!window.confirm(`Archive ${label}? It will be removed from this view.`)) {
+      return;
+    }
+
+    setArchiving(true);
+    try {
+      await archiveSignal({ target });
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          aria-label={`Open actions for ${label}`}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white text-[#646262] hover:bg-[#f8f7f7] disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+          disabled={archiving}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={6}
+          className="z-50 min-w-36 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-1 shadow-lg dark:border-white/10 dark:bg-[#181818]"
+        >
+          <DropdownMenu.Item
+            disabled={archiving}
+            onSelect={(event) => {
+              event.preventDefault();
+              void archive();
+            }}
+            className="flex cursor-pointer items-center gap-2 rounded-[3px] px-2 py-2 font-mono text-xs text-[#201d1d] outline-none hover:bg-[#f8f7f7] disabled:pointer-events-none disabled:opacity-40 dark:text-white/85 dark:hover:bg-white/10"
+          >
+            <Archive className="h-3.5 w-3.5" />
+            Archive
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
@@ -766,6 +836,7 @@ function TicketsTable({
             <th className="px-4 py-3 font-semibold">Priority</th>
             <th className="px-4 py-3 font-semibold">Status</th>
             <th className="px-4 py-3 font-semibold">Updated</th>
+            <th className="px-4 py-3 text-right font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody className={tableBodyClass}>
@@ -813,6 +884,15 @@ function TicketsTable({
               <td className={`px-4 py-3 ${secondaryTextClass}`}>
                 {formatDate(ticket.updatedAt)}
               </td>
+              <td className="px-4 py-3 text-right">
+                <SignalActions
+                  label={ticket.title}
+                  target={{
+                    id: ticket._id as Id<"supportTickets">,
+                    type: "ticket",
+                  }}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -846,7 +926,7 @@ function FeedbackTable({
     <div className="grid gap-3">
       {feedback.map((item) => (
         <article key={item._id} className={cardClass}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className={`text-base font-semibold ${primaryTextClass}`}>
                 {item.title}
@@ -856,7 +936,16 @@ function FeedbackTable({
                 {names.productName(item.companyKey, item.productKey)}
               </p>
             </div>
-            <StatusPill>{item.status}</StatusPill>
+            <div className="flex items-center gap-2">
+              <StatusPill>{item.status}</StatusPill>
+              <SignalActions
+                label={item.title}
+                target={{
+                  id: item._id as Id<"feedbackItems">,
+                  type: "feedback",
+                }}
+              />
+            </div>
           </div>
           <p className={`mt-3 text-sm leading-6 ${primaryTextClass}`}>
             {item.message}
@@ -892,7 +981,7 @@ function ContactSubmissionsTable({
     <div className="grid gap-3">
       {submissions.map((submission) => (
         <article key={submission._id} className={cardClass}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className={`text-base font-semibold ${primaryTextClass}`}>
                 {submission.subject ?? "Contact form submission"}
@@ -902,7 +991,16 @@ function ContactSubmissionsTable({
                 {names.productName(submission.companyKey, submission.productKey)}
               </p>
             </div>
-            <StatusPill>{formatDate(submission.createdAt)}</StatusPill>
+            <div className="flex items-center gap-2">
+              <StatusPill>{formatDate(submission.createdAt)}</StatusPill>
+              <SignalActions
+                label={submission.subject ?? "contact form submission"}
+                target={{
+                  id: submission._id as Id<"contactSubmissions">,
+                  type: "form",
+                }}
+              />
+            </div>
           </div>
           <p className={`mt-3 text-sm leading-6 ${primaryTextClass}`}>
             {submission.message}
@@ -947,6 +1045,7 @@ function AccountCreationsTable({
             <th className="px-4 py-3 font-semibold">Source</th>
             <th className="px-4 py-3 font-semibold">Signup source</th>
             <th className="px-4 py-3 font-semibold">Created</th>
+            <th className="px-4 py-3 text-right font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody className={tableBodyClass}>
@@ -970,6 +1069,15 @@ function AccountCreationsTable({
               </td>
               <td className={`px-4 py-3 ${secondaryTextClass}`}>
                 {formatDate(account.createdAt)}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <SignalActions
+                  label={account.name ?? account.email}
+                  target={{
+                    id: account._id as Id<"accountCreations">,
+                    type: "account",
+                  }}
+                />
               </td>
             </tr>
           ))}
@@ -1009,6 +1117,7 @@ function ContactsTable({
             <th className="px-4 py-3 font-semibold">Workspaces</th>
             <th className="px-4 py-3 font-semibold">Products</th>
             <th className="px-4 py-3 font-semibold">Locale</th>
+            <th className="px-4 py-3 text-right font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody className={tableBodyClass}>
@@ -1028,6 +1137,15 @@ function ContactsTable({
               </td>
               <td className={`px-4 py-3 ${secondaryTextClass}`}>
                 {contact.locale ?? "en"}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <SignalActions
+                  label={contact.name ?? contact.email}
+                  target={{
+                    id: contact._id as Id<"contacts">,
+                    type: "contact",
+                  }}
+                />
               </td>
             </tr>
           ))}
@@ -1062,7 +1180,7 @@ function EmailTable({
     <div className="grid gap-3">
       {emails.map((email) => (
         <article key={email._id} className={cardClass}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className={`text-base font-semibold ${primaryTextClass}`}>
                 {email.subject}
@@ -1075,7 +1193,16 @@ function EmailTable({
                 {names.productName(email.companyKey, email.productKey)}
               </p>
             </div>
-            <StatusPill>{email.status}</StatusPill>
+            <div className="flex items-center gap-2">
+              <StatusPill>{email.status}</StatusPill>
+              <SignalActions
+                label={email.subject}
+                target={{
+                  id: email._id as Id<"emailJobs">,
+                  type: "email",
+                }}
+              />
+            </div>
           </div>
         </article>
       ))}
@@ -1108,11 +1235,20 @@ function SearchTable({
     <div className="grid gap-3">
       {searches.map((search) => (
         <article key={search._id} className={cardClass}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <h3 className={`text-base font-semibold ${primaryTextClass}`}>
               {search.query}
             </h3>
-            <StatusPill>{`${search.resultCount ?? 0} results`}</StatusPill>
+            <div className="flex items-center gap-2">
+              <StatusPill>{`${search.resultCount ?? 0} results`}</StatusPill>
+              <SignalActions
+                label={search.query}
+                target={{
+                  id: search._id as Id<"helpSearches">,
+                  type: "search",
+                }}
+              />
+            </div>
           </div>
           <p className={`mt-1 text-sm ${secondaryTextClass}`}>
             {names.workspaceName(search.companyKey)} ·{" "}
@@ -1124,6 +1260,34 @@ function SearchTable({
     </div>
   );
 }
+
+const activityArchiveTarget = (item: { _id: string; type: string }) => {
+  switch (item.type) {
+    case "ticket":
+      return { id: item._id as Id<"supportTickets">, type: "ticket" } as const;
+    case "feedback":
+      return {
+        id: item._id as Id<"feedbackItems">,
+        type: "feedback",
+      } as const;
+    case "form":
+      return {
+        id: item._id as Id<"contactSubmissions">,
+        type: "form",
+      } as const;
+    case "account":
+      return {
+        id: item._id as Id<"accountCreations">,
+        type: "account",
+      } as const;
+    case "contact":
+      return { id: item._id as Id<"contacts">, type: "contact" } as const;
+    case "email":
+      return { id: item._id as Id<"emailJobs">, type: "email" } as const;
+    default:
+      return { id: item._id as Id<"helpSearches">, type: "search" } as const;
+  }
+};
 
 function ActivityFeed({
   filters,
@@ -1158,7 +1322,7 @@ function ActivityFeed({
 
   return (
     <div className={tableShellClass}>
-      <table className="w-full min-w-[860px] text-left text-sm">
+      <table className="w-full min-w-[920px] text-left text-sm">
         <thead className={tableHeadClass}>
           <tr>
             <th className="px-4 py-3 font-medium">Signal</th>
@@ -1166,6 +1330,7 @@ function ActivityFeed({
             <th className="px-4 py-3 font-medium">Type</th>
             <th className="px-4 py-3 font-medium">Status</th>
             <th className="px-4 py-3 font-medium">When</th>
+            <th className="px-4 py-3 text-right font-medium">Actions</th>
           </tr>
         </thead>
         <tbody className={tableBodyClass}>
@@ -1197,6 +1362,12 @@ function ActivityFeed({
               </td>
               <td className={`px-4 py-3 font-mono text-xs ${secondaryTextClass}`}>
                 {formatDate(item.occurredAt)}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <SignalActions
+                  label={item.title}
+                  target={activityArchiveTarget(item)}
+                />
               </td>
             </tr>
           ))}
