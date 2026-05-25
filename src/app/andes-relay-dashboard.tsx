@@ -10,9 +10,11 @@ import {
   ListFilter,
   Mail,
   MessageSquareText,
+  Moon,
   RefreshCw,
   Search,
   Settings,
+  Sun,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -89,6 +91,19 @@ type SourceFilter = {
   workspaceKey?: string;
 };
 
+type ThemeMode = "dark" | "light";
+
+const tableShellClass =
+  "overflow-hidden rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white dark:border-white/10 dark:bg-[#111]";
+const tableHeadClass =
+  "border-b border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] font-mono text-xs uppercase tracking-wide text-[#646262] dark:border-white/10 dark:bg-[#181818] dark:text-white/45";
+const tableBodyClass =
+  "divide-y divide-[rgba(15,0,0,0.08)] dark:divide-white/10";
+const cardClass =
+  "rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-4 dark:border-white/10 dark:bg-[#111]";
+const primaryTextClass = "text-[#201d1d] dark:text-white";
+const secondaryTextClass = "text-[#646262] dark:text-white/55";
+
 const keyLabel = (key: string) =>
   key
     .split("-")
@@ -143,7 +158,7 @@ const formatDate = (value: number) =>
 
 function StatusPill({ children }: { children: string }) {
   return (
-    <span className="inline-flex h-6 items-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-2 font-mono text-xs font-medium text-[#646262]">
+    <span className="inline-flex h-6 items-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-2 font-mono text-xs font-medium text-[#646262] dark:border-white/10 dark:bg-white/5 dark:text-white/65">
       {children}
     </span>
   );
@@ -199,10 +214,10 @@ function SourceStamp({
 
   return (
     <div className="flex min-w-40 flex-col gap-1">
-      <span className="text-sm font-semibold text-[#201d1d]">
+      <span className="text-sm font-semibold text-[#201d1d] dark:text-white">
         {names.workspaceName(workspaceKey)}
       </span>
-      <span className="font-mono text-xs text-[#646262]">
+      <span className="font-mono text-xs text-[#646262] dark:text-white/55">
         {names.productName(workspaceKey, productKey)}
       </span>
     </div>
@@ -271,14 +286,14 @@ function Metric({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded-[4px] border border-white/10 bg-[#111] p-4">
+    <div className="rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-4 dark:border-white/10 dark:bg-[#111]">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-xs font-medium uppercase text-white/45">
+        <p className="font-mono text-xs font-medium uppercase text-[#646262] dark:text-white/45">
           {label}
         </p>
-        <Icon className="h-4 w-4 text-white/45" />
+        <Icon className="h-4 w-4 text-[#646262] dark:text-white/45" />
       </div>
-      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-white">
+      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-[#201d1d] dark:text-white">
         {value}
       </p>
     </div>
@@ -287,8 +302,10 @@ function Metric({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex min-h-48 items-center justify-center rounded-[4px] border border-dashed border-[rgba(15,0,0,0.12)] bg-[#f8f7f7]">
-      <p className="font-mono text-sm text-[#646262]">{label}</p>
+    <div className="flex min-h-48 items-center justify-center rounded-[4px] border border-dashed border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] dark:border-white/10 dark:bg-[#111]">
+      <p className="font-mono text-sm text-[#646262] dark:text-white/55">
+        {label}
+      </p>
     </div>
   );
 }
@@ -745,9 +762,9 @@ function TicketsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <div className={tableShellClass}>
       <table className="w-full min-w-[760px] text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <thead className={tableHeadClass}>
           <tr>
             <th className="px-4 py-3 font-semibold">Ticket</th>
             <th className="px-4 py-3 font-semibold">Source</th>
@@ -756,12 +773,14 @@ function TicketsTable({
             <th className="px-4 py-3 font-semibold">Updated</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className={tableBodyClass}>
           {tickets.map((ticket) => (
             <tr key={ticket._id} className="align-top">
               <td className="px-4 py-3">
-                <p className="font-medium text-slate-950">{ticket.title}</p>
-                <p className="mt-1 line-clamp-2 max-w-xl text-slate-500">
+                <p className={`font-medium ${primaryTextClass}`}>
+                  {ticket.title}
+                </p>
+                <p className={`mt-1 line-clamp-2 max-w-xl ${secondaryTextClass}`}>
                   {ticket.message}
                 </p>
               </td>
@@ -788,7 +807,7 @@ function TicketsTable({
                         | "closed",
                     })
                   }
-                  className="h-8 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-800"
+                  className="h-8 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white px-2 text-sm text-[#201d1d] dark:border-white/10 dark:bg-[#050505] dark:text-white"
                 >
                   <option value="open">Open</option>
                   <option value="waiting">Waiting</option>
@@ -796,7 +815,7 @@ function TicketsTable({
                   <option value="closed">Closed</option>
                 </select>
               </td>
-              <td className="px-4 py-3 text-slate-500">
+              <td className={`px-4 py-3 ${secondaryTextClass}`}>
                 {formatDate(ticket.updatedAt)}
               </td>
             </tr>
@@ -831,23 +850,20 @@ function FeedbackTable({
   return (
     <div className="grid gap-3">
       {feedback.map((item) => (
-        <article
-          key={item._id}
-          className="rounded-lg border border-slate-200 bg-white p-4"
-        >
+        <article key={item._id} className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-slate-950">
+              <h3 className={`text-base font-semibold ${primaryTextClass}`}>
                 {item.title}
               </h3>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className={`mt-1 text-sm ${secondaryTextClass}`}>
                 {names.workspaceName(item.companyKey)} ·{" "}
                 {names.productName(item.companyKey, item.productKey)}
               </p>
             </div>
             <StatusPill>{item.status}</StatusPill>
           </div>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
+          <p className={`mt-3 text-sm leading-6 ${primaryTextClass}`}>
             {item.message}
           </p>
         </article>
@@ -880,27 +896,24 @@ function ContactSubmissionsTable({
   return (
     <div className="grid gap-3">
       {submissions.map((submission) => (
-        <article
-          key={submission._id}
-          className="rounded border border-[#d8d1bf] bg-[#fffdf7] p-4"
-        >
+        <article key={submission._id} className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-[#161410]">
+              <h3 className={`text-base font-semibold ${primaryTextClass}`}>
                 {submission.subject ?? "Contact form submission"}
               </h3>
-              <p className="mt-1 text-sm text-[#5c5548]">
+              <p className={`mt-1 text-sm ${secondaryTextClass}`}>
                 {names.workspaceName(submission.companyKey)} ·{" "}
                 {names.productName(submission.companyKey, submission.productKey)}
               </p>
             </div>
             <StatusPill>{formatDate(submission.createdAt)}</StatusPill>
           </div>
-          <p className="mt-3 text-sm leading-6 text-[#2f2b24]">
+          <p className={`mt-3 text-sm leading-6 ${primaryTextClass}`}>
             {submission.message}
           </p>
           {(submission.company || submission.phone) && (
-            <p className="mt-3 font-mono text-xs text-[#5c5548]">
+            <p className={`mt-3 font-mono text-xs ${secondaryTextClass}`}>
               {[submission.company, submission.phone].filter(Boolean).join(" · ")}
             </p>
           )}
@@ -931,9 +944,9 @@ function AccountCreationsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded border border-[#d8d1bf] bg-[#fffdf7]">
+    <div className={tableShellClass}>
       <table className="w-full min-w-[720px] text-left text-sm">
-        <thead className="border-b border-[#d8d1bf] bg-[#efe8d8] font-mono text-xs uppercase tracking-wide text-[#5c5548]">
+        <thead className={tableHeadClass}>
           <tr>
             <th className="px-4 py-3 font-semibold">User</th>
             <th className="px-4 py-3 font-semibold">Source</th>
@@ -941,14 +954,14 @@ function AccountCreationsTable({
             <th className="px-4 py-3 font-semibold">Created</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#ede5d5]">
+        <tbody className={tableBodyClass}>
           {accounts.map((account) => (
             <tr key={account._id}>
               <td className="px-4 py-3">
-                <p className="font-medium text-[#161410]">
+                <p className={`font-medium ${primaryTextClass}`}>
                   {account.name ?? account.email}
                 </p>
-                <p className="text-[#5c5548]">{account.email}</p>
+                <p className={secondaryTextClass}>{account.email}</p>
               </td>
               <td className="px-4 py-3">
                 <SourceStamp
@@ -960,7 +973,7 @@ function AccountCreationsTable({
               <td className="px-4 py-3">
                 <StatusPill>{account.source ?? "app"}</StatusPill>
               </td>
-              <td className="px-4 py-3 text-[#5c5548]">
+              <td className={`px-4 py-3 ${secondaryTextClass}`}>
                 {formatDate(account.createdAt)}
               </td>
             </tr>
@@ -993,9 +1006,9 @@ function ContactsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <div className={tableShellClass}>
       <table className="w-full min-w-[680px] text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <thead className={tableHeadClass}>
           <tr>
             <th className="px-4 py-3 font-semibold">Contact</th>
             <th className="px-4 py-3 font-semibold">Workspaces</th>
@@ -1003,22 +1016,22 @@ function ContactsTable({
             <th className="px-4 py-3 font-semibold">Locale</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className={tableBodyClass}>
           {contacts.map((contact) => (
             <tr key={contact._id}>
               <td className="px-4 py-3">
-                <p className="font-medium text-slate-950">
+                <p className={`font-medium ${primaryTextClass}`}>
                   {contact.name ?? contact.email}
                 </p>
-                <p className="text-slate-500">{contact.email}</p>
+                <p className={secondaryTextClass}>{contact.email}</p>
               </td>
-              <td className="px-4 py-3 text-slate-700">
+              <td className={`px-4 py-3 ${primaryTextClass}`}>
                 {contact.companies.map(names.workspaceName).join(", ")}
               </td>
-              <td className="px-4 py-3 text-slate-700">
+              <td className={`px-4 py-3 ${primaryTextClass}`}>
                 {contact.products.map((key) => keyLabel(key)).join(", ")}
               </td>
-              <td className="px-4 py-3 text-slate-500">
+              <td className={`px-4 py-3 ${secondaryTextClass}`}>
                 {contact.locale ?? "en"}
               </td>
             </tr>
@@ -1053,19 +1066,16 @@ function EmailTable({
   return (
     <div className="grid gap-3">
       {emails.map((email) => (
-        <article
-          key={email._id}
-          className="rounded-lg border border-slate-200 bg-white p-4"
-        >
+        <article key={email._id} className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-slate-950">
+              <h3 className={`text-base font-semibold ${primaryTextClass}`}>
                 {email.subject}
               </h3>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className={`mt-1 text-sm ${secondaryTextClass}`}>
                 {email.recipientEmail} · {email.templateKey}
               </p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className={`mt-1 text-sm ${secondaryTextClass}`}>
                 {names.workspaceName(email.companyKey)} ·{" "}
                 {names.productName(email.companyKey, email.productKey)}
               </p>
@@ -1102,17 +1112,14 @@ function SearchTable({
   return (
     <div className="grid gap-3">
       {searches.map((search) => (
-        <article
-          key={search._id}
-          className="rounded-lg border border-slate-200 bg-white p-4"
-        >
+        <article key={search._id} className={cardClass}>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-slate-950">
+            <h3 className={`text-base font-semibold ${primaryTextClass}`}>
               {search.query}
             </h3>
             <StatusPill>{`${search.resultCount ?? 0} results`}</StatusPill>
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className={`mt-1 text-sm ${secondaryTextClass}`}>
             {names.workspaceName(search.companyKey)} ·{" "}
             {names.productName(search.companyKey, search.productKey)} ·{" "}
             {formatDate(search.createdAt)}
@@ -1155,9 +1162,9 @@ function ActivityFeed({
   }
 
   return (
-    <div className="overflow-hidden border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc]">
+    <div className={tableShellClass}>
       <table className="w-full min-w-[860px] text-left text-sm">
-        <thead className="border-b border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262]">
+        <thead className={tableHeadClass}>
           <tr>
             <th className="px-4 py-3 font-medium">Signal</th>
             <th className="px-4 py-3 font-medium">Source</th>
@@ -1166,12 +1173,14 @@ function ActivityFeed({
             <th className="px-4 py-3 font-medium">When</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
+        <tbody className={tableBodyClass}>
           {activity.map((item) => (
             <tr key={`${item.type}-${item._id}`} className="align-top">
               <td className="px-4 py-3">
-                <p className="font-medium text-[#201d1d]">{item.title}</p>
-                <p className="mt-1 line-clamp-2 max-w-xl text-[#646262]">
+                <p className={`font-medium ${primaryTextClass}`}>
+                  {item.title}
+                </p>
+                <p className={`mt-1 line-clamp-2 max-w-xl ${secondaryTextClass}`}>
                   {item.description}
                 </p>
               </td>
@@ -1191,7 +1200,7 @@ function ActivityFeed({
               <td className="px-4 py-3">
                 <StatusPill>{item.statusLabel}</StatusPill>
               </td>
-              <td className="px-4 py-3 font-mono text-xs text-[#646262]">
+              <td className={`px-4 py-3 font-mono text-xs ${secondaryTextClass}`}>
                 {formatDate(item.occurredAt)}
               </td>
             </tr>
@@ -1217,6 +1226,7 @@ function LiveDashboard({
   const [typeFilter, setTypeFilter] =
     useState<(typeof activityTypes)[number]["key"]>("all");
   const [workspaceFilter, setWorkspaceFilter] = useState("all");
+  const [theme, setTheme] = useState<ThemeMode>("dark");
   const sourceSettings = useQuery(api.sources.listSettings) as
     | SourceSettings
     | undefined;
@@ -1269,6 +1279,7 @@ function LiveDashboard({
 
   return (
     <SidebarProvider
+      className={theme === "dark" ? "dark" : ""}
       style={
         {
           "--sidebar-width": "17rem",
@@ -1290,17 +1301,17 @@ function LiveDashboard({
         vercelUrl={vercelProjectUrl}
         workspaceOptions={workspaceSelectOptions}
       />
-      <SidebarInset className="min-h-screen bg-[#0a0a0a] text-[#ededed]">
+      <SidebarInset className="min-h-screen bg-[#fdfcfc] text-[#201d1d] dark:bg-[#0a0a0a] dark:text-[#ededed]">
         <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(15,0,0,0.12)] pb-5 dark:border-white/10">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 text-white/60">
+              <div className="flex items-center gap-2 text-[#646262] dark:text-white/60">
                 <SidebarTrigger className="-ml-1" />
                 <span className="font-mono text-xs uppercase">Dashboard</span>
               </div>
-              <span className="hidden h-5 w-px bg-white/10 sm:block" />
+              <span className="hidden h-5 w-px bg-[rgba(15,0,0,0.12)] dark:bg-white/10 sm:block" />
               <div className="min-w-0">
-                <p className="font-mono text-xs uppercase text-white/40">
+                <p className="font-mono text-xs uppercase text-[#646262] dark:text-white/40">
                   {selectedWorkspaceName}
                 </p>
                 <h1 className="truncate font-mono text-2xl font-semibold tracking-normal">
@@ -1313,7 +1324,7 @@ function LiveDashboard({
                 label="Project"
                 value={productFilter}
                 onChange={setProductFilter}
-                tone="dark"
+                tone={theme}
               >
                 <option value="all">All projects</option>
                 {filteredProductOptions.map(({ productKey, value, workspaceKey }) => (
@@ -1328,26 +1339,34 @@ function LiveDashboard({
                 ))}
               </FilterSelect>
               <a
-                href={vercelProjectUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-white/10 bg-white px-3 font-mono text-sm font-medium text-black hover:bg-white/90"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Vercel
-              </a>
-              <a
                 href={reactGrabUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-white/10 bg-white/5 px-3 font-mono text-sm font-medium text-white/80 hover:bg-white/10"
+                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white px-3 font-mono text-sm font-medium text-[#201d1d] hover:bg-[#f8f7f7] dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
               >
                 <ExternalLink className="h-4 w-4" />
                 React Grab
               </a>
               <button
                 type="button"
-                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-white/10 bg-white/5 px-3 font-mono text-sm font-medium text-white/70"
+                onClick={() =>
+                  setTheme((current) =>
+                    current === "dark" ? "light" : "dark",
+                  )
+                }
+                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white px-3 font-mono text-sm font-medium text-[#201d1d] hover:bg-[#f8f7f7] dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                Theme
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white px-3 font-mono text-sm font-medium text-[#646262] dark:border-white/10 dark:bg-white/5 dark:text-white/70"
                 title="Convex updates this dashboard in realtime"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -1395,12 +1414,12 @@ function LiveDashboard({
           </div>
 
           {activeTab === "all" && (
-            <div className="flex flex-wrap gap-3 border border-white/10 bg-[#111] p-4">
+            <div className="flex flex-wrap gap-3 border border-[rgba(15,0,0,0.12)] bg-white p-4 dark:border-white/10 dark:bg-[#111]">
               <FilterSelect
                 label="Window"
                 value={timeFilter}
                 onChange={setTimeFilter}
-                tone="dark"
+                tone={theme}
               >
                 {timeWindows.map((item) => (
                   <option key={item.key} value={item.key}>
@@ -1414,7 +1433,7 @@ function LiveDashboard({
                 onChange={(value) =>
                   setTypeFilter(value as (typeof activityTypes)[number]["key"])
                 }
-                tone="dark"
+                tone={theme}
               >
                 {activityTypes.map((item) => (
                   <option key={item.key} value={item.key}>
