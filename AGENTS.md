@@ -1,33 +1,59 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+- If `.ops/` exists, read it.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+## 1. Think Before Coding
 
-# Andes Relay Notes
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-- Always use Bun in this repo. Do not use npm, pnpm, or yarn.
-- This repo is intended to be open source. Treat committed files as public by default.
-- OpenAndes is the umbrella brand; Andes Relay is this project.
-- Use "workspace" for the top-level source boundary in user-facing copy and SDK examples. `companyKey` may remain in storage as a compatibility alias during migration.
-- Keep support tickets, feedback, contact forms, account creations, help searches, and email intents as separate concepts.
-- Keep product app integration through `@openandes/relay-sdk`; do not reintroduce copy/pasted per-product ingestion clients after the package is published.
-- The SDK currently lives at `packages/relay-sdk` and is consumed locally with Bun workspaces.
-- The SDK is public-publish ready for npm. Keep package publishing docs generic in committed files; account-specific npm details belong in ignored `.ops/` notes.
-- Root `bun run build` runs `prebuild`, which builds the SDK before Next.js builds. Preserve that ordering.
-- Do not commit `.env.local`, ingestion secrets, Resend keys, Clerk keys, npm tokens, Vercel account names, personal emails, or production account ownership details.
-- Generated SDK `dist` output is ignored and should not be committed.
-- Do not hardcode private company, product, account, email, or workspace names in public docs or source. Use generic examples in the repo and source labels in the dashboard settings.
-- Use ignored `.ops/` files for Jorge-only deployment/account runbooks. Never reference those private notes from public README examples unless the user explicitly asks to publish sanitized information.
-- After local folder moves or project renames, delete `.next/` before running `bun dev` if Turbopack reports `Next.js package not found`.
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-## Verification
+## 2. Simplicity First
 
-Use these checks after changing app or SDK code:
+**Minimum code that solves the problem. Nothing speculative.**
 
-```bash
-bun run check
-bun run poc:submit
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
 ```
 
-`bun run poc:submit` should submit through the SDK and return `created` for fresh event ids or `duplicate` for existing POC ids.
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+
