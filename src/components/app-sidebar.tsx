@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { OrganizationSwitcher, useClerk, useUser } from "@clerk/nextjs";
 import type { LucideIcon } from "lucide-react";
 import {
   LogOut,
@@ -60,6 +60,21 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        {authConfigured ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+            <div className="px-2">
+              <OrganizationSwitcher
+                afterCreateOrganizationUrl="/"
+                afterLeaveOrganizationUrl="/"
+                afterSelectOrganizationUrl="/"
+                createOrganizationMode="modal"
+                hidePersonal
+                organizationProfileMode="modal"
+              />
+            </div>
+          </SidebarGroup>
+        ) : null}
         <SidebarGroup>
           <SidebarGroupLabel>Signals</SidebarGroupLabel>
           <SidebarMenu>

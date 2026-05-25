@@ -24,7 +24,7 @@ const now = Date.now();
 const supportApp = createAndesRelayClient({
   endpoint,
   secret,
-  companyKey: "example-co",
+  workspaceKey: "example-co",
   productKey: "support-app",
   environment: "production",
 });
@@ -32,7 +32,7 @@ const supportApp = createAndesRelayClient({
 const salesSite = createAndesRelayClient({
   endpoint,
   secret,
-  companyKey: "example-co",
+  workspaceKey: "example-co",
   productKey: "sales-site",
   environment: "production",
 });

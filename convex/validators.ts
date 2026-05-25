@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 
 export const companyKey = v.string();
+export const workspaceKey = v.string();
 
 export const eventType = v.union(
   v.literal("support.ticket.created"),
@@ -55,7 +56,8 @@ export const actor = v.union(
 );
 
 export const source = v.object({
-  companyKey,
+  workspaceKey: v.optional(workspaceKey),
+  companyKey: v.optional(companyKey),
   productKey: v.string(),
   environment: v.optional(v.string()),
   externalId: v.optional(v.string()),

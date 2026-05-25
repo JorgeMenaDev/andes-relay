@@ -8,6 +8,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - Always use Bun in this repo. Do not use npm, pnpm, or yarn.
 - OpenAndes is the umbrella brand; Andes Relay is this project.
+- Use "workspace" for the top-level source boundary in user-facing copy and SDK examples. `companyKey` may remain in storage as a compatibility alias during migration.
 - Keep support tickets, feedback, contact forms, account creations, help searches, and email intents as separate concepts.
 - Keep product app integration through `@openandes/relay-sdk`; do not reintroduce copy/pasted per-product ingestion clients after the package is published.
 - The SDK currently lives at `packages/relay-sdk` and is consumed locally with Bun workspaces.

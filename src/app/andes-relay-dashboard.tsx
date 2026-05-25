@@ -19,6 +19,12 @@ import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
+import {
+  CreateOrganization,
+  OrganizationProfile,
+  OrganizationSwitcher,
+  useOrganization,
+} from "@clerk/nextjs";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -30,7 +36,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const tabs = [
-  { key: "all", label: "All", icon: ListFilter },
+  { key: "all", label: "Activity", icon: ListFilter },
   { key: "tickets", label: "Support", icon: LifeBuoy },
   { key: "feedback", label: "Feedback", icon: MessageSquareText },
   { key: "forms", label: "Forms", icon: ClipboardList },
@@ -59,10 +65,10 @@ const timeWindows = [
 ] as const;
 
 type SourceSettings = {
-  companies: { key: string; name: string }[];
-  discoveredCompanies: string[];
-  discoveredProducts: { companyKey: string; productKey: string }[];
-  products: { key: string; companyKey: string; name: string }[];
+  discoveredProducts: { productKey: string; workspaceKey: string }[];
+  discoveredWorkspaces: string[];
+  products: { key: string; name: string; workspaceKey: string }[];
+  workspaces: { key: string; name: string }[];
 };
 
 const keyLabel = (key: string) =>
@@ -73,20 +79,20 @@ const keyLabel = (key: string) =>
     .join(" ") || key;
 
 const sourceNames = (settings?: SourceSettings) => {
-  const companyNames = new Map(
-    settings?.companies.map((item) => [item.key, item.name]),
+  const workspaceNames = new Map(
+    settings?.workspaces.map((item) => [item.key, item.name]),
   );
   const productNames = new Map(
     settings?.products.map((item) => [
-      `${item.companyKey}:${item.key}`,
+      `${item.workspaceKey}:${item.key}`,
       item.name,
     ]),
   );
 
   return {
-    companyName: (key: string) => companyNames.get(key) ?? keyLabel(key),
-    productName: (companyKey: string, productKey: string) =>
-      productNames.get(`${companyKey}:${productKey}`) ?? keyLabel(productKey),
+    productName: (workspaceKey: string, productKey: string) =>
+      productNames.get(`${workspaceKey}:${productKey}`) ?? keyLabel(productKey),
+    workspaceName: (key: string) => workspaceNames.get(key) ?? keyLabel(key),
   };
 };
 
@@ -132,23 +138,23 @@ function FilterSelect({
 }
 
 function SourceStamp({
-  companyKey,
   productKey,
   settings,
+  workspaceKey,
 }: {
-  companyKey: string;
   productKey: string;
   settings?: SourceSettings;
+  workspaceKey: string;
 }) {
   const names = sourceNames(settings);
 
   return (
     <div className="flex min-w-40 flex-col gap-1">
       <span className="text-sm font-semibold text-[#201d1d]">
-        {names.companyName(companyKey)}
+        {names.workspaceName(workspaceKey)}
       </span>
       <span className="font-mono text-xs text-[#646262]">
-        {names.productName(companyKey, productKey)}
+        {names.productName(workspaceKey, productKey)}
       </span>
     </div>
   );
@@ -263,27 +269,30 @@ function TextInput({
 }
 
 function SettingsPanel({
+  authConfigured,
   ingestEndpoint,
   settings,
 }: {
+  authConfigured: boolean;
   ingestEndpoint?: string;
   settings?: SourceSettings;
 }) {
-  const upsertCompany = useMutation(api.sources.upsertCompany);
+  const { organization } = useOrganization();
+  const upsertWorkspace = useMutation(api.sources.upsertWorkspace);
   const upsertProduct = useMutation(api.sources.upsertProduct);
-  const removeCompany = useMutation(api.sources.removeCompany);
+  const removeWorkspace = useMutation(api.sources.removeWorkspace);
   const removeProduct = useMutation(api.sources.removeProduct);
-  const [companyKey, setCompanyKey] = useState("");
-  const [companyNameValue, setCompanyNameValue] = useState("");
+  const [workspaceKey, setWorkspaceKey] = useState("");
+  const [workspaceNameValue, setWorkspaceNameValue] = useState("");
   const [productKey, setProductKey] = useState("");
   const [productNameValue, setProductNameValue] = useState("");
-  const [productCompanyKey, setProductCompanyKey] = useState("");
+  const [productWorkspaceKey, setProductWorkspaceKey] = useState("");
   const endpoint = ingestEndpoint || "https://your-convex-site.convex.site";
   const sourceConfig = settings ?? {
-    companies: [],
-    discoveredCompanies: [],
     discoveredProducts: [],
+    discoveredWorkspaces: [],
     products: [],
+    workspaces: [],
   };
 
   return (
@@ -300,29 +309,29 @@ function SettingsPanel({
           className="grid gap-3 md:grid-cols-[1fr_1fr_auto]"
           onSubmit={async (event) => {
             event.preventDefault();
-            await upsertCompany({
-              key: companyKey,
-              name: companyNameValue || keyLabel(companyKey),
+            await upsertWorkspace({
+              key: workspaceKey,
+              name: workspaceNameValue || keyLabel(workspaceKey),
             });
-            setCompanyKey("");
-            setCompanyNameValue("");
+            setWorkspaceKey("");
+            setWorkspaceNameValue("");
           }}
         >
           <TextInput
-            label="Company key"
-            value={companyKey}
-            onChange={setCompanyKey}
-            placeholder="acme"
+            label="Workspace key"
+            value={workspaceKey}
+            onChange={setWorkspaceKey}
+            placeholder="andesphere"
           />
           <TextInput
             label="Display name"
-            value={companyNameValue}
-            onChange={setCompanyNameValue}
-            placeholder="Acme"
+            value={workspaceNameValue}
+            onChange={setWorkspaceNameValue}
+            placeholder="Andesphere"
           />
           <button
             type="submit"
-            disabled={!companyKey.trim()}
+            disabled={!workspaceKey.trim()}
             className="mt-5 h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40"
           >
             Save
@@ -333,22 +342,22 @@ function SettingsPanel({
           <table className="w-full min-w-[520px] text-left text-sm">
             <thead className="bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262]">
               <tr>
-                <th className="px-3 py-2 font-medium">Company</th>
+                <th className="px-3 py-2 font-medium">Workspace</th>
                 <th className="px-3 py-2 font-medium">Key</th>
                 <th className="px-3 py-2 font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
-              {sourceConfig.companies.map((company) => (
-                <tr key={company.key}>
-                  <td className="px-3 py-2 font-medium">{company.name}</td>
+              {sourceConfig.workspaces.map((workspace) => (
+                <tr key={workspace.key}>
+                  <td className="px-3 py-2 font-medium">{workspace.name}</td>
                   <td className="px-3 py-2 font-mono text-xs text-[#646262]">
-                    {company.key}
+                    {workspace.key}
                   </td>
                   <td className="px-3 py-2">
                     <button
                       type="button"
-                      onClick={() => removeCompany({ key: company.key })}
+                      onClick={() => removeWorkspace({ key: workspace.key })}
                       className="font-mono text-xs text-[#ff3b30]"
                     >
                       Remove
@@ -356,7 +365,7 @@ function SettingsPanel({
                   </td>
                 </tr>
               ))}
-              {sourceConfig.discoveredCompanies.map((key) => (
+              {sourceConfig.discoveredWorkspaces.map((key) => (
                 <tr key={key}>
                   <td className="px-3 py-2 text-[#646262]">
                     {keyLabel(key)}
@@ -368,7 +377,7 @@ function SettingsPanel({
                     <button
                       type="button"
                       onClick={() =>
-                        upsertCompany({ key, name: keyLabel(key) })
+                        upsertWorkspace({ key, name: keyLabel(key) })
                       }
                       className="font-mono text-xs text-[#201d1d]"
                     >
@@ -386,9 +395,9 @@ function SettingsPanel({
           onSubmit={async (event) => {
             event.preventDefault();
             await upsertProduct({
-              companyKey: productCompanyKey,
               key: productKey,
               name: productNameValue || keyLabel(productKey),
+              workspaceKey: productWorkspaceKey,
             });
             setProductKey("");
             setProductNameValue("");
@@ -407,25 +416,25 @@ function SettingsPanel({
             placeholder="Web app"
           />
           <FilterSelect
-            label="Company"
-            value={productCompanyKey}
-            onChange={setProductCompanyKey}
+            label="Workspace"
+            value={productWorkspaceKey}
+            onChange={setProductWorkspaceKey}
           >
-            <option value="">Select company</option>
+            <option value="">Select workspace</option>
             {[
-              ...sourceConfig.companies.map((item) => item.key),
-              ...sourceConfig.discoveredCompanies,
+              ...sourceConfig.workspaces.map((item) => item.key),
+              ...sourceConfig.discoveredWorkspaces,
             ]
               .filter((key, index, keys) => keys.indexOf(key) === index)
               .map((key) => (
                 <option key={key} value={key}>
-                  {sourceNames(sourceConfig).companyName(key)}
+                  {sourceNames(sourceConfig).workspaceName(key)}
                 </option>
               ))}
           </FilterSelect>
           <button
             type="submit"
-            disabled={!productKey.trim() || !productCompanyKey.trim()}
+            disabled={!productKey.trim() || !productWorkspaceKey.trim()}
             className="mt-5 h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40"
           >
             Save
@@ -437,17 +446,17 @@ function SettingsPanel({
             <thead className="bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262]">
               <tr>
                 <th className="px-3 py-2 font-medium">Product</th>
-                <th className="px-3 py-2 font-medium">Company</th>
+                <th className="px-3 py-2 font-medium">Workspace</th>
                 <th className="px-3 py-2 font-medium">Key</th>
                 <th className="px-3 py-2 font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
               {sourceConfig.products.map((product) => (
-                <tr key={`${product.companyKey}:${product.key}`}>
+                <tr key={`${product.workspaceKey}:${product.key}`}>
                   <td className="px-3 py-2 font-medium">{product.name}</td>
                   <td className="px-3 py-2">
-                    {sourceNames(sourceConfig).companyName(product.companyKey)}
+                    {sourceNames(sourceConfig).workspaceName(product.workspaceKey)}
                   </td>
                   <td className="px-3 py-2 font-mono text-xs text-[#646262]">
                     {product.key}
@@ -457,8 +466,8 @@ function SettingsPanel({
                       type="button"
                       onClick={() =>
                         removeProduct({
-                          companyKey: product.companyKey,
                           key: product.key,
+                          workspaceKey: product.workspaceKey,
                         })
                       }
                       className="font-mono text-xs text-[#ff3b30]"
@@ -469,12 +478,12 @@ function SettingsPanel({
                 </tr>
               ))}
               {sourceConfig.discoveredProducts.map((product) => (
-                <tr key={`${product.companyKey}:${product.productKey}`}>
+                <tr key={`${product.workspaceKey}:${product.productKey}`}>
                   <td className="px-3 py-2 text-[#646262]">
                     {keyLabel(product.productKey)}
                   </td>
                   <td className="px-3 py-2">
-                    {sourceNames(sourceConfig).companyName(product.companyKey)}
+                    {sourceNames(sourceConfig).workspaceName(product.workspaceKey)}
                   </td>
                   <td className="px-3 py-2 font-mono text-xs text-[#646262]">
                     {product.productKey}
@@ -484,9 +493,9 @@ function SettingsPanel({
                       type="button"
                       onClick={() =>
                         upsertProduct({
-                          companyKey: product.companyKey,
                           key: product.productKey,
                           name: keyLabel(product.productKey),
+                          workspaceKey: product.workspaceKey,
                         })
                       }
                       className="font-mono text-xs text-[#201d1d]"
@@ -536,6 +545,40 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
             </p>
           </div>
         </div>
+
+        <div className="mt-6 border-t border-[rgba(15,0,0,0.12)] pt-4">
+          <div className="mb-4 flex items-center gap-2">
+            <Users className="h-4 w-4 text-[#646262]" />
+            <h2 className="font-mono text-base font-semibold text-[#201d1d]">
+              Clerk workspace
+            </h2>
+          </div>
+          {authConfigured ? (
+            <div className="grid gap-4">
+              <OrganizationSwitcher
+                afterCreateOrganizationUrl="/"
+                afterLeaveOrganizationUrl="/"
+                afterSelectOrganizationUrl="/"
+                createOrganizationMode="modal"
+                hidePersonal
+                organizationProfileMode="modal"
+              />
+              {organization ? (
+                <OrganizationProfile routing="hash" />
+              ) : (
+                <CreateOrganization
+                  afterCreateOrganizationUrl="/"
+                  routing="hash"
+                />
+              )}
+            </div>
+          ) : (
+            <p className="text-sm leading-6 text-[#646262]">
+              Clerk is disabled locally. In production, use this panel to create
+              workspaces and invite members.
+            </p>
+          )}
+        </div>
       </aside>
     </div>
   );
@@ -576,9 +619,9 @@ function TicketsTable({ settings }: { settings?: SourceSettings }) {
               </td>
               <td className="px-4 py-3">
                 <SourceStamp
-                  companyKey={ticket.companyKey}
                   productKey={ticket.productKey}
                   settings={settings}
+                  workspaceKey={ticket.companyKey}
                 />
               </td>
               <td className="px-4 py-3">
@@ -641,7 +684,7 @@ function FeedbackTable({ settings }: { settings?: SourceSettings }) {
                 {item.title}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                {names.companyName(item.companyKey)} ·{" "}
+                {names.workspaceName(item.companyKey)} ·{" "}
                 {names.productName(item.companyKey, item.productKey)}
               </p>
             </div>
@@ -683,7 +726,7 @@ function ContactSubmissionsTable({ settings }: { settings?: SourceSettings }) {
                 {submission.subject ?? "Contact form submission"}
               </h3>
               <p className="mt-1 text-sm text-[#5c5548]">
-                {names.companyName(submission.companyKey)} ·{" "}
+                {names.workspaceName(submission.companyKey)} ·{" "}
                 {names.productName(submission.companyKey, submission.productKey)}
               </p>
             </div>
@@ -736,9 +779,9 @@ function AccountCreationsTable({ settings }: { settings?: SourceSettings }) {
               </td>
               <td className="px-4 py-3">
                 <SourceStamp
-                  companyKey={account.companyKey}
                   productKey={account.productKey}
                   settings={settings}
+                  workspaceKey={account.companyKey}
                 />
               </td>
               <td className="px-4 py-3">
@@ -773,7 +816,7 @@ function ContactsTable({ settings }: { settings?: SourceSettings }) {
         <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3 font-semibold">Contact</th>
-            <th className="px-4 py-3 font-semibold">Companies</th>
+            <th className="px-4 py-3 font-semibold">Workspaces</th>
             <th className="px-4 py-3 font-semibold">Products</th>
             <th className="px-4 py-3 font-semibold">Locale</th>
           </tr>
@@ -788,7 +831,7 @@ function ContactsTable({ settings }: { settings?: SourceSettings }) {
                 <p className="text-slate-500">{contact.email}</p>
               </td>
               <td className="px-4 py-3 text-slate-700">
-                {contact.companies.map(names.companyName).join(", ")}
+                {contact.companies.map(names.workspaceName).join(", ")}
               </td>
               <td className="px-4 py-3 text-slate-700">
                 {contact.products.map((key) => keyLabel(key)).join(", ")}
@@ -832,7 +875,7 @@ function EmailTable({ settings }: { settings?: SourceSettings }) {
                 {email.recipientEmail} · {email.templateKey}
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                {names.companyName(email.companyKey)} ·{" "}
+                {names.workspaceName(email.companyKey)} ·{" "}
                 {names.productName(email.companyKey, email.productKey)}
               </p>
             </div>
@@ -870,7 +913,7 @@ function SearchTable({ settings }: { settings?: SourceSettings }) {
             <StatusPill>{`${search.resultCount ?? 0} results`}</StatusPill>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            {names.companyName(search.companyKey)} ·{" "}
+            {names.workspaceName(search.companyKey)} ·{" "}
             {names.productName(search.companyKey, search.productKey)} ·{" "}
             {formatDate(search.createdAt)}
           </p>
@@ -881,22 +924,21 @@ function SearchTable({ settings }: { settings?: SourceSettings }) {
 }
 
 function ActivityFeed({
-  companyFilter,
   productFilter,
   settings,
   timeFilter,
   typeFilter,
+  workspaceFilter,
 }: {
-  companyFilter: string;
   productFilter: string;
   settings?: SourceSettings;
   timeFilter: string;
   typeFilter: (typeof activityTypes)[number]["key"];
+  workspaceFilter: string;
 }) {
   const [loadedAt] = useState(() => Date.now());
   const selectedWindow = timeWindows.find((item) => item.key === timeFilter);
   const activity = useQuery(api.dashboard.listActivity, {
-    companyKey: companyFilter === "all" ? undefined : companyFilter,
     limit: 100,
     productKey: productFilter === "all" ? undefined : productFilter,
     since:
@@ -904,6 +946,7 @@ function ActivityFeed({
         ? undefined
         : loadedAt - selectedWindow.ms,
     type: typeFilter === "all" ? undefined : typeFilter,
+    workspaceKey: workspaceFilter === "all" ? undefined : workspaceFilter,
   });
 
   if (activity === undefined) {
@@ -937,9 +980,9 @@ function ActivityFeed({
               </td>
               <td className="px-4 py-3">
                 <SourceStamp
-                  companyKey={item.companyKey}
                   productKey={item.productKey}
                   settings={settings}
+                  workspaceKey={item.companyKey}
                 />
               </td>
               <td className="px-4 py-3">
@@ -972,30 +1015,30 @@ function LiveDashboard({
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["key"]>(
     "all",
   );
-  const [companyFilter, setCompanyFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
   const [timeFilter, setTimeFilter] = useState("24h");
   const [typeFilter, setTypeFilter] =
     useState<(typeof activityTypes)[number]["key"]>("all");
+  const [workspaceFilter, setWorkspaceFilter] = useState("all");
   const overview = useQuery(api.dashboard.getOverview);
   const sourceSettings = useQuery(api.sources.listSettings) as
     | SourceSettings
     | undefined;
-  const companyOptions = [
-    ...(sourceSettings?.companies.map((item) => item.key) ?? []),
-    ...(sourceSettings?.discoveredCompanies ?? []),
+  const workspaceOptions = [
+    ...(sourceSettings?.workspaces.map((item) => item.key) ?? []),
+    ...(sourceSettings?.discoveredWorkspaces ?? []),
   ].filter((key, index, keys) => keys.indexOf(key) === index);
   const productOptions = [
     ...(sourceSettings?.products.map((item) => ({
-      companyKey: item.companyKey,
       productKey: item.key,
+      workspaceKey: item.workspaceKey,
     })) ?? []),
     ...(sourceSettings?.discoveredProducts ?? []),
   ].filter(
     (item, index, items) =>
       items.findIndex(
         (candidate) =>
-          candidate.companyKey === item.companyKey &&
+          candidate.workspaceKey === item.workspaceKey &&
           candidate.productKey === item.productKey,
       ) === index,
   );
@@ -1104,14 +1147,14 @@ function LiveDashboard({
                 ))}
               </FilterSelect>
               <FilterSelect
-                label="Company"
-                value={companyFilter}
-                onChange={setCompanyFilter}
+                label="Workspace"
+                value={workspaceFilter}
+                onChange={setWorkspaceFilter}
               >
-                <option value="all">All companies</option>
-                {companyOptions.map((key) => (
+                <option value="all">All workspaces</option>
+                {workspaceOptions.map((key) => (
                   <option key={key} value={key}>
-                    {names.companyName(key)}
+                    {names.workspaceName(key)}
                   </option>
                 ))}
               </FilterSelect>
@@ -1121,9 +1164,12 @@ function LiveDashboard({
                 onChange={setProductFilter}
               >
                 <option value="all">All products</option>
-                {productOptions.map(({ companyKey, productKey }) => (
-                  <option key={`${companyKey}:${productKey}`} value={productKey}>
-                    {names.productName(companyKey, productKey)}
+                {productOptions.map(({ productKey, workspaceKey }) => (
+                  <option
+                    key={`${workspaceKey}:${productKey}`}
+                    value={productKey}
+                  >
+                    {names.productName(workspaceKey, productKey)}
                   </option>
                 ))}
               </FilterSelect>
@@ -1133,11 +1179,11 @@ function LiveDashboard({
           <section className="overflow-x-auto">
             {activeTab === "all" && (
               <ActivityFeed
-                companyFilter={companyFilter}
                 productFilter={productFilter}
                 settings={sourceSettings}
                 timeFilter={timeFilter}
                 typeFilter={typeFilter}
+                workspaceFilter={workspaceFilter}
               />
             )}
             {activeTab === "tickets" && (
@@ -1161,6 +1207,7 @@ function LiveDashboard({
             )}
             {activeTab === "settings" && (
               <SettingsPanel
+                authConfigured={authConfigured}
                 ingestEndpoint={ingestEndpoint}
                 settings={sourceSettings}
               />

@@ -39,7 +39,19 @@ http.route({
     }
 
     const event = await request.json();
-    const result = await ctx.runMutation(api.ingest.ingestEvent, { event });
+    const source = { ...(event.source ?? {}) };
+    const workspaceKey = source.workspaceKey ?? source.companyKey;
+    delete source.workspaceKey;
+    const normalizedEvent = {
+      ...event,
+      source: {
+        ...source,
+        companyKey: workspaceKey,
+      },
+    };
+    const result = await ctx.runMutation(api.ingest.ingestEvent, {
+      event: normalizedEvent,
+    });
 
     return json(result);
   }),

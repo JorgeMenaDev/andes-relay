@@ -39,7 +39,14 @@ export const ingestEvent = mutation({
     }
 
     const now = Date.now();
-    const { companyKey, productKey, environment } = event.source;
+    const workspaceKey = event.source.workspaceKey ?? event.source.companyKey;
+
+    if (!workspaceKey) {
+      throw new Error("Andes Relay source.workspaceKey is required");
+    }
+
+    const { productKey, environment } = event.source;
+    const companyKey = workspaceKey;
     const externalId = event.source.externalId;
     let contactId: Id<"contacts"> | undefined;
 

@@ -9,10 +9,11 @@ email intents across multiple apps.
 It includes:
 
 - A Clerk-protected Next.js dashboard.
+- Clerk Organizations for workspaces and member invitations.
 - A Convex backend with HTTP ingestion.
 - A reusable TypeScript SDK at `packages/relay-sdk`.
-- Dashboard source settings for company/product labels.
-- A unified activity view with filters for time window, signal type, company,
+- Dashboard source settings for workspace/product labels.
+- A unified activity view with filters for time window, signal type, workspace,
   and product.
 
 ## How It Works
@@ -39,12 +40,16 @@ Each product sends standardized events:
 Support, feedback, contact forms, account creations, help searches, and email
 intents are intentionally separate records.
 
+Each event belongs to a `workspaceKey` and `productKey`. A workspace is the
+top-level operating boundary, usually one business or internal org. Products sit
+inside a workspace.
+
 ## Dashboard
 
 The dashboard has these views:
 
-- `All`: one unified feed across all signal types. It defaults to the latest 24
-  hours.
+- `Activity`: one unified feed across all signal types. It defaults to the
+  latest 24 hours and can show all workspaces/products.
 - `Support`
 - `Feedback`
 - `Forms`
@@ -56,14 +61,16 @@ The dashboard has these views:
 
 The `Settings` view lets an operator:
 
-- Add or update company display labels.
+- Add or update workspace display labels.
 - Add or update product display labels.
-- Remove company/product labels.
+- Remove workspace/product labels.
 - See discovered source keys from ingested events.
 - See the ingest endpoint, product environment variables, and SDK install
   command.
+- Create or switch Clerk workspaces with Clerk Organizations.
+- Invite workspace members through the Clerk organization profile.
 
-Removing a company or product in settings removes the dashboard label, not the
+Removing a workspace or product in settings removes the dashboard label, not the
 historical ingested events.
 
 ## Local Setup
@@ -128,7 +135,7 @@ import { createAndesRelayClient } from "@openandes/relay-sdk";
 const relay = createAndesRelayClient({
   endpoint: process.env.ANDES_RELAY_ENDPOINT!,
   secret: process.env.ANDES_RELAY_INGEST_SECRET!,
-  companyKey: "acme",
+  workspaceKey: "acme",
   productKey: "web",
   environment: process.env.NODE_ENV,
 });
@@ -162,13 +169,15 @@ curl -X POST "$ANDES_RELAY_ENDPOINT/ingest" \
     "eventId":"example-help-search-1",
     "type":"help.search",
     "occurredAt":1770000000000,
-    "source":{"companyKey":"acme","productKey":"web"},
+    "source":{"workspaceKey":"acme","productKey":"web"},
     "search":{"query":"billing","resultCount":3}
   }'
 ```
 
-`companyKey` and `productKey` are stable source slugs. You can rename their
+`workspaceKey` and `productKey` are stable source slugs. You can rename their
 display labels from the dashboard Settings view without changing product code.
+For rollout compatibility, the ingest API still accepts the previous
+`companyKey` source field as an alias for `workspaceKey`.
 
 ## Publishing
 

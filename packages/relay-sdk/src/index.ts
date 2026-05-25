@@ -4,7 +4,8 @@ export type Priority = "low" | "normal" | "high" | "urgent";
 export type SourceConfig = {
   endpoint: string;
   secret: string;
-  companyKey: string;
+  workspaceKey?: string;
+  companyKey?: string;
   productKey: string;
   environment?: string;
 };
@@ -82,10 +83,17 @@ const buildHeaders = (secret: string) => ({
 export const createAndesRelayClient = ({
   endpoint,
   secret,
+  workspaceKey,
   companyKey,
   productKey,
   environment,
 }: SourceConfig) => {
+  const resolvedWorkspaceKey = workspaceKey ?? companyKey;
+
+  if (!resolvedWorkspaceKey) {
+    throw new Error("Andes Relay workspaceKey is required");
+  }
+
   const submitEvent = async (event: Record<string, unknown>) => {
     const response = await fetch(`${endpoint.replace(/\/$/, "")}/ingest`, {
       method: "POST",
@@ -93,7 +101,8 @@ export const createAndesRelayClient = ({
       body: JSON.stringify({
         ...event,
         source: {
-          companyKey,
+          workspaceKey: resolvedWorkspaceKey,
+          companyKey: resolvedWorkspaceKey,
           productKey,
           environment,
         },

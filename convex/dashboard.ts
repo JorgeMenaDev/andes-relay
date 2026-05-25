@@ -15,18 +15,18 @@ const signalType = v.union(
 
 const matchesSource = (
   item: { companyKey?: string; productKey?: string },
-  companyKey?: string,
+  workspaceKey?: string,
   productKey?: string,
 ) =>
-  (!companyKey || item.companyKey === companyKey) &&
+  (!workspaceKey || item.companyKey === workspaceKey) &&
   (!productKey || item.productKey === productKey);
 
 const matchesContactSource = (
   item: { companies?: string[]; products?: string[] },
-  companyKey?: string,
+  workspaceKey?: string,
   productKey?: string,
 ) =>
-  (!companyKey || item.companies?.includes(companyKey)) &&
+  (!workspaceKey || item.companies?.includes(workspaceKey)) &&
   (!productKey || item.products?.includes(productKey));
 
 const inWindow = (timestamp: number, since?: number) =>
@@ -170,11 +170,11 @@ export const listEmailJobs = query({
 
 export const listActivity = query({
   args: {
-    companyKey: v.optional(v.string()),
     limit: limitArg,
     productKey: v.optional(v.string()),
     since: v.optional(v.number()),
     type: v.optional(signalType),
+    workspaceKey: v.optional(v.string()),
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
@@ -216,7 +216,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
-            matchesSource(item, args.companyKey, args.productKey),
+            matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
@@ -230,7 +230,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
-            matchesSource(item, args.companyKey, args.productKey),
+            matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
@@ -244,7 +244,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.createdAt, args.since) &&
-            matchesSource(item, args.companyKey, args.productKey),
+            matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
@@ -258,7 +258,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.createdAt, args.since) &&
-            matchesSource(item, args.companyKey, args.productKey),
+            matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
@@ -272,7 +272,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
-            matchesContactSource(item, args.companyKey, args.productKey),
+            matchesContactSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
@@ -288,7 +288,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.updatedAt, args.since) &&
-            matchesSource(item, args.companyKey, args.productKey),
+            matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
@@ -302,7 +302,7 @@ export const listActivity = query({
         .filter(
           (item) =>
             inWindow(item.createdAt, args.since) &&
-            matchesSource(item, args.companyKey, args.productKey),
+            matchesSource(item, args.workspaceKey, args.productKey),
         )
         .map((item) => ({
           ...item,
