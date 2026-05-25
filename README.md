@@ -6,6 +6,10 @@ Andes Relay gives product teams one standard way to collect support tickets,
 feedback, contact form submissions, account-created events, help searches, and
 email intents across multiple apps.
 
+This repository is designed to stay safe for public development. Deployment
+accounts, personal emails, real production secrets, npm auth identities, and
+company-specific operations notes should not be committed here.
+
 It includes:
 
 - A Clerk-protected Next.js dashboard.
@@ -89,6 +93,10 @@ bunx convex dev
 bun run poc:submit
 bun run dev
 ```
+
+If the local folder or project name changes, remove `.next/` before restarting
+`bun dev`. Stale Turbopack cache can otherwise fail with `Next.js package not
+found`.
 
 ## Environment
 
@@ -197,11 +205,22 @@ For rollout compatibility, the ingest API still accepts the previous
 }
 ```
 
-Publish with Bun after confirming the package scope:
+Before publishing, build and typecheck the package:
+
+```bash
+bun run build:sdk
+bun run typecheck:sdk
+```
+
+Publish with Bun from a machine logged in to the npm account that owns the
+package scope:
 
 ```bash
 bun publish --cwd packages/relay-sdk
 ```
+
+Do not commit npm tokens or account-specific publishing details. Keep those in
+local ignored operations notes.
 
 ## Verification
 
