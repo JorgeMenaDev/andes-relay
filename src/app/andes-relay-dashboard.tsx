@@ -16,16 +16,9 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
-import {
-  OrganizationList,
-  OrganizationProfile,
-  OrganizationSwitcher,
-  useOrganization,
-} from "@clerk/nextjs";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -70,6 +63,15 @@ type SourceSettings = {
   discoveredWorkspaces: string[];
   products: { key: string; name: string; workspaceKey: string }[];
   workspaces: { key: string; name: string }[];
+};
+
+type WorkspaceInvite = {
+  _id: Id<"workspaceInvites">;
+  workspaceKey: string;
+  email: string;
+  role: "admin" | "member";
+  status: "pending" | "accepted" | "revoked";
+  createdAt: number;
 };
 
 const keyLabel = (key: string) =>
@@ -278,16 +280,21 @@ function SettingsPanel({
   ingestEndpoint?: string;
   settings?: SourceSettings;
 }) {
-  const { organization } = useOrganization();
   const upsertWorkspace = useMutation(api.sources.upsertWorkspace);
   const upsertProduct = useMutation(api.sources.upsertProduct);
   const removeWorkspace = useMutation(api.sources.removeWorkspace);
   const removeProduct = useMutation(api.sources.removeProduct);
+  const createWorkspaceInvite = useMutation(api.sources.createWorkspaceInvite);
+  const revokeWorkspaceInvite = useMutation(api.sources.revokeWorkspaceInvite);
+  const workspaceInvites = useQuery(api.sources.listWorkspaceInvites, {});
   const [workspaceKey, setWorkspaceKey] = useState("");
   const [workspaceNameValue, setWorkspaceNameValue] = useState("");
   const [productKey, setProductKey] = useState("");
   const [productNameValue, setProductNameValue] = useState("");
   const [productWorkspaceKey, setProductWorkspaceKey] = useState("");
+  const [inviteWorkspaceKey, setInviteWorkspaceKey] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
   const endpoint = ingestEndpoint || "https://your-convex-site.convex.site";
   const sourceConfig = settings ?? {
     discoveredProducts: [],
@@ -295,6 +302,11 @@ function SettingsPanel({
     products: [],
     workspaces: [],
   };
+  const workspaceOptions = [
+    ...sourceConfig.workspaces.map((item) => item.key),
+    ...sourceConfig.discoveredWorkspaces,
+  ].filter((key, index, keys) => keys.indexOf(key) === index);
+  const invites = (workspaceInvites ?? []) as WorkspaceInvite[];
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
@@ -551,51 +563,114 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
           <div className="mb-4 flex items-center gap-2">
             <Users className="h-4 w-4 text-[#646262]" />
             <h2 className="font-mono text-base font-semibold text-[#201d1d]">
-              Clerk workspace
+              Workspace access
             </h2>
           </div>
-          {authConfigured ? (
-            <div className="grid gap-4">
-              <OrganizationSwitcher
-                afterCreateOrganizationUrl="/workspace"
-                afterLeaveOrganizationUrl="/"
-                afterSelectOrganizationUrl="/"
-                createOrganizationMode="navigation"
-                createOrganizationUrl="/create-workspace"
-                hidePersonal
-                organizationProfileMode="navigation"
-                organizationProfileUrl="/workspace"
-              />
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Link
-                  href="/create-workspace"
-                  className="inline-flex h-10 items-center justify-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] px-3 font-mono text-sm font-medium text-[#201d1d]"
-                >
-                  Create workspace
-                </Link>
-                <Link
-                  href="/workspace"
-                  className="inline-flex h-10 items-center justify-center rounded-[4px] bg-[#201d1d] px-3 font-mono text-sm font-medium text-[#fdfcfc]"
-                >
-                  Members and invites
-                </Link>
-              </div>
-              {organization ? (
-                <OrganizationProfile routing="hash" />
-              ) : (
-                <OrganizationList
-                  afterCreateOrganizationUrl="/workspace"
-                  afterSelectOrganizationUrl="/workspace"
-                  hidePersonal
-                />
-              )}
-            </div>
-          ) : (
-            <p className="text-sm leading-6 text-[#646262]">
-              Clerk is disabled locally. In production, use this panel to create
-              workspaces and invite members.
+          <form
+            className="grid gap-3"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              await createWorkspaceInvite({
+                email: inviteEmail,
+                role: inviteRole,
+                workspaceKey: inviteWorkspaceKey,
+              });
+              setInviteEmail("");
+            }}
+          >
+            <FilterSelect
+              label="Workspace"
+              value={inviteWorkspaceKey}
+              onChange={setInviteWorkspaceKey}
+            >
+              <option value="">Select workspace</option>
+              {workspaceOptions.map((key) => (
+                <option key={key} value={key}>
+                  {sourceNames(sourceConfig).workspaceName(key)}
+                </option>
+              ))}
+            </FilterSelect>
+            <TextInput
+              label="Invite email"
+              value={inviteEmail}
+              onChange={setInviteEmail}
+              placeholder="person@example.com"
+            />
+            <FilterSelect
+              label="Role"
+              value={inviteRole}
+              onChange={(value) =>
+                setInviteRole(value === "admin" ? "admin" : "member")
+              }
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </FilterSelect>
+            <button
+              type="submit"
+              disabled={!inviteWorkspaceKey.trim() || !inviteEmail.trim()}
+              className="h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40"
+            >
+              Invite
+            </button>
+          </form>
+
+          <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)]">
+            <table className="w-full min-w-[420px] text-left text-sm">
+              <thead className="bg-[#f1eeee] font-mono text-xs uppercase text-[#646262]">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Email</th>
+                  <th className="px-3 py-2 font-medium">Workspace</th>
+                  <th className="px-3 py-2 font-medium">Role</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-2 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
+                {invites.map((invite) => (
+                  <tr key={invite._id}>
+                    <td className="px-3 py-2 font-medium">{invite.email}</td>
+                    <td className="px-3 py-2">
+                      {sourceNames(sourceConfig).workspaceName(invite.workspaceKey)}
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs text-[#646262]">
+                      {invite.role}
+                    </td>
+                    <td className="px-3 py-2">
+                      <StatusPill>{invite.status}</StatusPill>
+                    </td>
+                    <td className="px-3 py-2">
+                      {invite.status === "pending" ? (
+                        <button
+                          type="button"
+                          onClick={() => revokeWorkspaceInvite({ id: invite._id })}
+                          className="font-mono text-xs text-[#ff3b30]"
+                        >
+                          Revoke
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+                {invites.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-3 py-6 text-center font-mono text-xs text-[#646262]"
+                    >
+                      No workspace invites yet.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+          {!authConfigured ? (
+            <p className="mt-3 text-xs leading-5 text-[#646262]">
+              Clerk is disabled locally, so invites are saved without a signed-in
+              sender.
             </p>
-          )}
+          ) : null}
         </div>
       </aside>
     </div>

@@ -5,9 +5,11 @@ const sourceInput = {
   key: v.string(),
   name: v.string(),
 };
+const inviteRole = v.union(v.literal("admin"), v.literal("member"));
 
 const cleanKey = (key: string) => key.trim().toLowerCase();
 const cleanName = (name: string) => name.trim();
+const cleanEmail = (email: string) => email.trim().toLowerCase();
 
 const uniqueSources = (items: { companyKey?: string; productKey?: string }[]) => {
   const workspaces = new Set<string>();
@@ -182,6 +184,84 @@ export const removeProduct = mutation({
     if (existing) {
       await ctx.db.delete(existing._id);
     }
+
+    return null;
+  },
+});
+
+export const listWorkspaceInvites = query({
+  args: {
+    workspaceKey: v.optional(v.string()),
+  },
+  returns: v.array(v.any()),
+  handler: async (ctx, args) => {
+    if (args.workspaceKey) {
+      return await ctx.db
+        .query("workspaceInvites")
+        .withIndex("by_workspace", (q) =>
+          q.eq("workspaceKey", cleanKey(args.workspaceKey ?? "")),
+        )
+        .order("desc")
+        .collect();
+    }
+
+    return await ctx.db.query("workspaceInvites").order("desc").collect();
+  },
+});
+
+export const createWorkspaceInvite = mutation({
+  args: {
+    email: v.string(),
+    invitedByEmail: v.optional(v.string()),
+    role: inviteRole,
+    workspaceKey: v.string(),
+  },
+  returns: v.id("workspaceInvites"),
+  handler: async (ctx, args) => {
+    const workspaceKey = cleanKey(args.workspaceKey);
+    const email = args.email.trim();
+    const normalizedEmail = cleanEmail(args.email);
+    const now = Date.now();
+    const existing = await ctx.db
+      .query("workspaceInvites")
+      .withIndex("by_workspace_email", (q) =>
+        q.eq("workspaceKey", workspaceKey).eq("normalizedEmail", normalizedEmail),
+      )
+      .unique();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        email,
+        invitedByEmail: args.invitedByEmail,
+        role: args.role,
+        status: "pending",
+        updatedAt: now,
+      });
+
+      return existing._id;
+    }
+
+    return await ctx.db.insert("workspaceInvites", {
+      workspaceKey,
+      email,
+      normalizedEmail,
+      invitedByEmail: args.invitedByEmail,
+      role: args.role,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+export const revokeWorkspaceInvite = mutation({
+  args: { id: v.id("workspaceInvites") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, {
+      status: "revoked",
+      updatedAt: Date.now(),
+    });
 
     return null;
   },

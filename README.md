@@ -9,7 +9,7 @@ email intents across multiple apps.
 It includes:
 
 - A Clerk-protected Next.js dashboard.
-- Clerk Organizations for workspaces and member invitations.
+- App-owned workspaces and invitations managed from the dashboard.
 - A Convex backend with HTTP ingestion.
 - A reusable TypeScript SDK at `packages/relay-sdk`.
 - Dashboard source settings for workspace/product labels.
@@ -67,14 +67,16 @@ The `Settings` view lets an operator:
 - See discovered source keys from ingested events.
 - See the ingest endpoint, product environment variables, and SDK install
   command.
-- Create or switch workspaces through the in-app Clerk Organization controls.
-- Invite workspace members from `/workspace`, which opens the workspace member
-  and invitation management UI.
+- Create workspaces inside Andes Relay.
+- Invite workspace members from the dashboard or `/workspace`.
 
 The direct dashboard routes are:
 
 - `/create-workspace`: create a new workspace.
 - `/workspace`: manage the selected workspace, members, and invitations.
+
+Clerk is used for authentication only. Workspace records and invites are Andes
+Relay data in Convex, not Clerk Organization records.
 
 Removing a workspace or product in settings removes the dashboard label, not the
 historical ingested events.

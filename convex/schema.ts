@@ -42,6 +42,19 @@ export default defineSchema({
     .index("by_key", ["key"])
     .index("by_company_key", ["companyKey"]),
 
+  workspaceInvites: defineTable({
+    workspaceKey: v.string(),
+    email: v.string(),
+    normalizedEmail: v.string(),
+    role: v.union(v.literal("admin"), v.literal("member")),
+    status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("revoked")),
+    invitedByEmail: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceKey"])
+    .index("by_workspace_email", ["workspaceKey", "normalizedEmail"]),
+
   contacts: defineTable({
     email: v.string(),
     normalizedEmail: v.string(),

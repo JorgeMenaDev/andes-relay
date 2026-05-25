@@ -12,14 +12,16 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { OrganizationSwitcher, useClerk, useUser } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import type { LucideIcon } from "lucide-react";
 import {
   LogOut,
   Mountain,
   Settings,
   UserCircle,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
 import type { ComponentProps } from "react";
 
 export type SidebarNavItem = {
@@ -60,23 +62,19 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {authConfigured ? (
-          <SidebarGroup>
-            <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-            <div className="px-2">
-              <OrganizationSwitcher
-                afterCreateOrganizationUrl="/workspace"
-                afterLeaveOrganizationUrl="/"
-                afterSelectOrganizationUrl="/"
-                createOrganizationMode="navigation"
-                createOrganizationUrl="/create-workspace"
-                hidePersonal
-                organizationProfileMode="navigation"
-                organizationProfileUrl="/workspace"
-              />
-            </div>
-          </SidebarGroup>
-        ) : null}
+        <SidebarGroup>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Manage workspaces">
+                <Link href="/workspace">
+                  <Users />
+                  <span>Workspaces</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Signals</SidebarGroupLabel>
           <SidebarMenu>
