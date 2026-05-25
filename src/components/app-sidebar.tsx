@@ -15,7 +15,6 @@ import {
 import { useClerk, useUser } from "@clerk/nextjs";
 import type { LucideIcon } from "lucide-react";
 import {
-  ExternalLink,
   LogOut,
   Mountain,
   Settings,
@@ -37,10 +36,8 @@ export function AppSidebar({
   items,
   onSelect,
   onWorkspaceChange,
-  reactGrabUrl,
   selectedWorkspaceName,
   selectedWorkspaceValue,
-  vercelUrl,
   workspaceOptions,
   ...props
 }: ComponentProps<typeof Sidebar> & {
@@ -49,10 +46,8 @@ export function AppSidebar({
   items: readonly SidebarNavItem[];
   onSelect: (key: string) => void;
   onWorkspaceChange: (value: string) => void;
-  reactGrabUrl: string;
   selectedWorkspaceName: string;
   selectedWorkspaceValue: string;
-  vercelUrl: string;
   workspaceOptions: { key: string; name: string }[];
 }) {
   return (
@@ -119,30 +114,6 @@ export function AppSidebar({
                   <Users />
                   <span>Workspaces</span>
                 </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                tooltip="Open Vercel project"
-                className="text-white/70 hover:bg-white/10 hover:text-white"
-              >
-                <a href={vercelUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink />
-                  <span>Open Vercel</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                tooltip="Open React Grab"
-                className="text-white/70 hover:bg-white/10 hover:text-white"
-              >
-                <a href={reactGrabUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink />
-                  <span>React Grab</span>
-                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

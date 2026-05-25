@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,15 @@ export default function RootLayout({
 }>) {
   const document = (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+      {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <TooltipProvider>{children}</TooltipProvider>
       </body>

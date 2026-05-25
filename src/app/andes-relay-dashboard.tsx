@@ -4,14 +4,12 @@ import {
   AlertCircle,
   CheckCircle2,
   ClipboardList,
-  ExternalLink,
   KeyRound,
   LifeBuoy,
   ListFilter,
   Mail,
   MessageSquareText,
   Moon,
-  RefreshCw,
   Search,
   Settings,
   Sun,
@@ -60,9 +58,6 @@ const timeWindows = [
   { key: "7d", label: "Latest 7 days", ms: 7 * 24 * 60 * 60 * 1000 },
   { key: "all", label: "All time", ms: null },
 ] as const;
-
-const vercelProjectUrl = "https://vercel.com/arketix/customer-ops-hub";
-const reactGrabUrl = "https://www.react-grab.com/";
 
 type SourceSettings = {
   discoveredProducts: { productKey: string; workspaceKey: string }[];
@@ -1295,10 +1290,8 @@ function LiveDashboard({
           setWorkspaceFilter(value);
           setProductFilter("all");
         }}
-        reactGrabUrl={reactGrabUrl}
         selectedWorkspaceName={selectedWorkspaceName}
         selectedWorkspaceValue={workspaceFilter}
-        vercelUrl={vercelProjectUrl}
         workspaceOptions={workspaceSelectOptions}
       />
       <SidebarInset className="min-h-screen bg-[#fdfcfc] text-[#201d1d] dark:bg-[#0a0a0a] dark:text-[#ededed]">
@@ -1338,15 +1331,6 @@ function LiveDashboard({
                   </option>
                 ))}
               </FilterSelect>
-              <a
-                href={reactGrabUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white px-3 font-mono text-sm font-medium text-[#201d1d] hover:bg-[#f8f7f7] dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
-              >
-                <ExternalLink className="h-4 w-4" />
-                React Grab
-              </a>
               <button
                 type="button"
                 onClick={() =>
@@ -1363,14 +1347,6 @@ function LiveDashboard({
                   <Moon className="h-4 w-4" />
                 )}
                 Theme
-              </button>
-              <button
-                type="button"
-                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white px-3 font-mono text-sm font-medium text-[#646262] dark:border-white/10 dark:bg-white/5 dark:text-white/70"
-                title="Convex updates this dashboard in realtime"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Live
               </button>
             </div>
           </header>
