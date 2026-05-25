@@ -67,8 +67,14 @@ The `Settings` view lets an operator:
 - See discovered source keys from ingested events.
 - See the ingest endpoint, product environment variables, and SDK install
   command.
-- Create or switch Clerk workspaces with Clerk Organizations.
-- Invite workspace members through the Clerk organization profile.
+- Create or switch workspaces through the in-app Clerk Organization controls.
+- Invite workspace members from `/workspace`, which opens the workspace member
+  and invitation management UI.
+
+The direct dashboard routes are:
+
+- `/create-workspace`: create a new workspace.
+- `/workspace`: manage the selected workspace, members, and invitations.
 
 Removing a workspace or product in settings removes the dashboard label, not the
 historical ingested events.

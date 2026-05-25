@@ -65,12 +65,14 @@ export function AppSidebar({
             <SidebarGroupLabel>Workspace</SidebarGroupLabel>
             <div className="px-2">
               <OrganizationSwitcher
-                afterCreateOrganizationUrl="/"
+                afterCreateOrganizationUrl="/workspace"
                 afterLeaveOrganizationUrl="/"
                 afterSelectOrganizationUrl="/"
-                createOrganizationMode="modal"
+                createOrganizationMode="navigation"
+                createOrganizationUrl="/create-workspace"
                 hidePersonal
-                organizationProfileMode="modal"
+                organizationProfileMode="navigation"
+                organizationProfileUrl="/workspace"
               />
             </div>
           </SidebarGroup>

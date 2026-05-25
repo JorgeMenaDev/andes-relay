@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
@@ -556,19 +557,35 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
           {authConfigured ? (
             <div className="grid gap-4">
               <OrganizationSwitcher
-                afterCreateOrganizationUrl="/"
+                afterCreateOrganizationUrl="/workspace"
                 afterLeaveOrganizationUrl="/"
                 afterSelectOrganizationUrl="/"
-                createOrganizationMode="modal"
+                createOrganizationMode="navigation"
+                createOrganizationUrl="/create-workspace"
                 hidePersonal
-                organizationProfileMode="modal"
+                organizationProfileMode="navigation"
+                organizationProfileUrl="/workspace"
               />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Link
+                  href="/create-workspace"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] px-3 font-mono text-sm font-medium text-[#201d1d]"
+                >
+                  Create workspace
+                </Link>
+                <Link
+                  href="/workspace"
+                  className="inline-flex h-10 items-center justify-center rounded-[4px] bg-[#201d1d] px-3 font-mono text-sm font-medium text-[#fdfcfc]"
+                >
+                  Members and invites
+                </Link>
+              </div>
               {organization ? (
                 <OrganizationProfile routing="hash" />
               ) : (
                 <OrganizationList
-                  afterCreateOrganizationUrl="/"
-                  afterSelectOrganizationUrl="/"
+                  afterCreateOrganizationUrl="/workspace"
+                  afterSelectOrganizationUrl="/workspace"
                   hidePersonal
                 />
               )}
