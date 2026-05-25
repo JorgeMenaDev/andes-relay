@@ -4,6 +4,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ClipboardList,
+  ExternalLink,
   KeyRound,
   LifeBuoy,
   ListFilter,
@@ -58,6 +59,8 @@ const timeWindows = [
   { key: "all", label: "All time", ms: null },
 ] as const;
 
+const vercelProjectUrl = "https://vercel.com/arketix/customer-ops-hub";
+
 type SourceSettings = {
   discoveredProducts: { productKey: string; workspaceKey: string }[];
   discoveredWorkspaces: string[];
@@ -72,6 +75,17 @@ type WorkspaceInvite = {
   role: "admin" | "member";
   status: "pending" | "accepted" | "revoked";
   createdAt: number;
+};
+
+type ProductOption = {
+  productKey: string;
+  value: string;
+  workspaceKey: string;
+};
+
+type SourceFilter = {
+  productKey?: string;
+  workspaceKey?: string;
 };
 
 const keyLabel = (key: string) =>
@@ -99,6 +113,25 @@ const sourceNames = (settings?: SourceSettings) => {
   };
 };
 
+const productOptionValue = (workspaceKey: string, productKey: string) =>
+  `${workspaceKey}:${productKey}`;
+
+const queryFilters = ({
+  productValue,
+  workspaceValue,
+}: {
+  productValue: string;
+  workspaceValue: string;
+}): SourceFilter => {
+  if (productValue !== "all") {
+    const [workspaceKey, productKey] = productValue.split(":");
+
+    return { productKey, workspaceKey };
+  }
+
+  return workspaceValue === "all" ? {} : { workspaceKey: workspaceValue };
+};
+
 const formatDate = (value: number) =>
   new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
@@ -118,21 +151,33 @@ function StatusPill({ children }: { children: string }) {
 function FilterSelect({
   label,
   onChange,
+  tone = "light",
   value,
   children,
 }: {
   label: string;
   onChange: (value: string) => void;
+  tone?: "dark" | "light";
   value: string;
   children: ReactNode;
 }) {
+  const isDark = tone === "dark";
+
   return (
-    <label className="flex min-w-44 flex-col gap-1 font-mono text-xs text-[#646262]">
+    <label
+      className={`flex min-w-44 flex-col gap-1 font-mono text-xs ${
+        isDark ? "text-white/45" : "text-[#646262]"
+      }`}
+    >
       <span>{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
-        className="h-10 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-3 text-sm text-[#201d1d] outline-none focus:border-[#646262]"
+        className={`h-10 rounded-[4px] border px-3 text-sm outline-none ${
+          isDark
+            ? "border-white/10 bg-[#050505] text-white focus:border-white/40"
+            : "border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] text-[#201d1d] focus:border-[#646262]"
+        }`}
       >
         {children}
       </select>
@@ -225,14 +270,14 @@ function Metric({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] p-4">
+    <div className="rounded-[4px] border border-white/10 bg-[#111] p-4">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-xs font-medium uppercase text-[#646262]">
+        <p className="font-mono text-xs font-medium uppercase text-white/45">
           {label}
         </p>
-        <Icon className="h-4 w-4 text-[#646262]" />
+        <Icon className="h-4 w-4 text-white/45" />
       </div>
-      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-[#201d1d]">
+      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-white">
         {value}
       </p>
     </div>
@@ -677,8 +722,17 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
   );
 }
 
-function TicketsTable({ settings }: { settings?: SourceSettings }) {
-  const tickets = useQuery(api.dashboard.listTickets, { limit: 50 });
+function TicketsTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
+  const tickets = useQuery(api.dashboard.listTickets, {
+    ...filters,
+    limit: 50,
+  });
   const updateStatus = useMutation(api.tickets.updateStatus);
 
   if (tickets === undefined) {
@@ -752,8 +806,17 @@ function TicketsTable({ settings }: { settings?: SourceSettings }) {
   );
 }
 
-function FeedbackTable({ settings }: { settings?: SourceSettings }) {
-  const feedback = useQuery(api.dashboard.listFeedback, { limit: 50 });
+function FeedbackTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
+  const feedback = useQuery(api.dashboard.listFeedback, {
+    ...filters,
+    limit: 50,
+  });
   const names = sourceNames(settings);
 
   if (feedback === undefined) {
@@ -792,8 +855,15 @@ function FeedbackTable({ settings }: { settings?: SourceSettings }) {
   );
 }
 
-function ContactSubmissionsTable({ settings }: { settings?: SourceSettings }) {
+function ContactSubmissionsTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
   const submissions = useQuery(api.dashboard.listContactSubmissions, {
+    ...filters,
     limit: 50,
   });
   const names = sourceNames(settings);
@@ -839,8 +909,17 @@ function ContactSubmissionsTable({ settings }: { settings?: SourceSettings }) {
   );
 }
 
-function AccountCreationsTable({ settings }: { settings?: SourceSettings }) {
-  const accounts = useQuery(api.dashboard.listAccountCreations, { limit: 50 });
+function AccountCreationsTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
+  const accounts = useQuery(api.dashboard.listAccountCreations, {
+    ...filters,
+    limit: 50,
+  });
 
   if (accounts === undefined) {
     return <EmptyState label="Loading account creations..." />;
@@ -891,8 +970,17 @@ function AccountCreationsTable({ settings }: { settings?: SourceSettings }) {
   );
 }
 
-function ContactsTable({ settings }: { settings?: SourceSettings }) {
-  const contacts = useQuery(api.dashboard.listContacts, { limit: 50 });
+function ContactsTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
+  const contacts = useQuery(api.dashboard.listContacts, {
+    ...filters,
+    limit: 50,
+  });
   const names = sourceNames(settings);
 
   if (contacts === undefined) {
@@ -940,8 +1028,17 @@ function ContactsTable({ settings }: { settings?: SourceSettings }) {
   );
 }
 
-function EmailTable({ settings }: { settings?: SourceSettings }) {
-  const emails = useQuery(api.dashboard.listEmailJobs, { limit: 50 });
+function EmailTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
+  const emails = useQuery(api.dashboard.listEmailJobs, {
+    ...filters,
+    limit: 50,
+  });
   const names = sourceNames(settings);
 
   if (emails === undefined) {
@@ -980,8 +1077,17 @@ function EmailTable({ settings }: { settings?: SourceSettings }) {
   );
 }
 
-function SearchTable({ settings }: { settings?: SourceSettings }) {
-  const searches = useQuery(api.dashboard.listHelpSearches, { limit: 50 });
+function SearchTable({
+  filters,
+  settings,
+}: {
+  filters: SourceFilter;
+  settings?: SourceSettings;
+}) {
+  const searches = useQuery(api.dashboard.listHelpSearches, {
+    ...filters,
+    limit: 50,
+  });
   const names = sourceNames(settings);
 
   if (searches === undefined) {
@@ -1017,29 +1123,26 @@ function SearchTable({ settings }: { settings?: SourceSettings }) {
 }
 
 function ActivityFeed({
-  productFilter,
+  filters,
   settings,
   timeFilter,
   typeFilter,
-  workspaceFilter,
 }: {
-  productFilter: string;
+  filters: SourceFilter;
   settings?: SourceSettings;
   timeFilter: string;
   typeFilter: (typeof activityTypes)[number]["key"];
-  workspaceFilter: string;
 }) {
   const [loadedAt] = useState(() => Date.now());
   const selectedWindow = timeWindows.find((item) => item.key === timeFilter);
   const activity = useQuery(api.dashboard.listActivity, {
+    ...filters,
     limit: 100,
-    productKey: productFilter === "all" ? undefined : productFilter,
     since:
       selectedWindow?.ms === null || selectedWindow === undefined
         ? undefined
         : loadedAt - selectedWindow.ms,
     type: typeFilter === "all" ? undefined : typeFilter,
-    workspaceKey: workspaceFilter === "all" ? undefined : workspaceFilter,
   });
 
   if (activity === undefined) {
@@ -1113,7 +1216,6 @@ function LiveDashboard({
   const [typeFilter, setTypeFilter] =
     useState<(typeof activityTypes)[number]["key"]>("all");
   const [workspaceFilter, setWorkspaceFilter] = useState("all");
-  const overview = useQuery(api.dashboard.getOverview);
   const sourceSettings = useQuery(api.sources.listSettings) as
     | SourceSettings
     | undefined;
@@ -1121,12 +1223,20 @@ function LiveDashboard({
     ...(sourceSettings?.workspaces.map((item) => item.key) ?? []),
     ...(sourceSettings?.discoveredWorkspaces ?? []),
   ].filter((key, index, keys) => keys.indexOf(key) === index);
-  const productOptions = [
+  const workspaceSelectOptions = workspaceOptions.map((key) => ({
+    key,
+    name: sourceNames(sourceSettings).workspaceName(key),
+  }));
+  const productOptions: ProductOption[] = [
     ...(sourceSettings?.products.map((item) => ({
       productKey: item.key,
+      value: productOptionValue(item.workspaceKey, item.key),
       workspaceKey: item.workspaceKey,
     })) ?? []),
-    ...(sourceSettings?.discoveredProducts ?? []),
+    ...(sourceSettings?.discoveredProducts.map((item) => ({
+      ...item,
+      value: productOptionValue(item.workspaceKey, item.productKey),
+    })) ?? []),
   ].filter(
     (item, index, items) =>
       items.findIndex(
@@ -1135,7 +1245,26 @@ function LiveDashboard({
           candidate.productKey === item.productKey,
       ) === index,
   );
+  const filteredProductOptions =
+    workspaceFilter === "all"
+      ? productOptions
+      : productOptions.filter((item) => item.workspaceKey === workspaceFilter);
   const names = sourceNames(sourceSettings);
+  const filters = queryFilters({
+    productValue: productFilter,
+    workspaceValue: workspaceFilter,
+  });
+  const overview = useQuery(api.dashboard.getOverview, filters);
+  const selectedProduct = productOptions.find(
+    (item) => item.value === productFilter,
+  );
+  const selectedWorkspaceName =
+    workspaceFilter === "all"
+      ? "All workspaces"
+      : names.workspaceName(workspaceFilter);
+  const selectedProjectName = selectedProduct
+    ? names.productName(selectedProduct.workspaceKey, selectedProduct.productKey)
+    : "All projects";
 
   return (
     <SidebarProvider
@@ -1150,29 +1279,70 @@ function LiveDashboard({
         authConfigured={authConfigured}
         items={tabs}
         onSelect={(key) => setActiveTab(key as (typeof tabs)[number]["key"])}
+        onWorkspaceChange={(value) => {
+          setWorkspaceFilter(value);
+          setProductFilter("all");
+        }}
+        selectedWorkspaceName={selectedWorkspaceName}
+        selectedWorkspaceValue={workspaceFilter}
+        vercelUrl={vercelProjectUrl}
+        workspaceOptions={workspaceSelectOptions}
       />
-      <SidebarInset className="min-h-screen bg-[#fdfcfc] text-[#201d1d]">
-        <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-          <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[rgba(15,0,0,0.12)] pb-5">
-            <div>
-              <div className="flex items-center gap-2">
+      <SidebarInset className="min-h-screen bg-[#0a0a0a] text-[#ededed]">
+        <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-white/60">
                 <SidebarTrigger className="-ml-1" />
-                <p className="font-mono text-sm font-medium uppercase text-[#646262]">
-                  Andes Relay
-                </p>
+                <span className="font-mono text-xs uppercase">Dashboard</span>
               </div>
-              <h1 className="mt-3 max-w-4xl font-mono text-3xl font-bold leading-normal tracking-normal">
-                Open-source customer signal routing for SaaS products
-              </h1>
+              <span className="hidden h-5 w-px bg-white/10 sm:block" />
+              <div className="min-w-0">
+                <p className="font-mono text-xs uppercase text-white/40">
+                  {selectedWorkspaceName}
+                </p>
+                <h1 className="truncate font-mono text-2xl font-semibold tracking-normal">
+                  {selectedProjectName}
+                </h1>
+              </div>
             </div>
-            <button
-              type="button"
-              className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-3 font-mono text-sm font-medium text-[#424245]"
-              title="Convex updates this dashboard in realtime"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Live
-            </button>
+            <div className="flex flex-wrap items-end gap-3">
+              <FilterSelect
+                label="Project"
+                value={productFilter}
+                onChange={setProductFilter}
+                tone="dark"
+              >
+                <option value="all">All projects</option>
+                {filteredProductOptions.map(({ productKey, value, workspaceKey }) => (
+                  <option key={value} value={value}>
+                    {workspaceFilter === "all"
+                      ? `${names.workspaceName(workspaceKey)} / ${names.productName(
+                          workspaceKey,
+                          productKey,
+                        )}`
+                      : names.productName(workspaceKey, productKey)}
+                  </option>
+                ))}
+              </FilterSelect>
+              <a
+                href={vercelProjectUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-white/10 bg-white px-3 font-mono text-sm font-medium text-black hover:bg-white/90"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Vercel
+              </a>
+              <button
+                type="button"
+                className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-white/10 bg-white/5 px-3 font-mono text-sm font-medium text-white/70"
+                title="Convex updates this dashboard in realtime"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Live
+              </button>
+            </div>
           </header>
 
           <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
@@ -1214,11 +1384,12 @@ function LiveDashboard({
           </div>
 
           {activeTab === "all" && (
-            <div className="flex flex-wrap gap-3 border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] p-4">
+            <div className="flex flex-wrap gap-3 border border-white/10 bg-[#111] p-4">
               <FilterSelect
                 label="Window"
                 value={timeFilter}
                 onChange={setTimeFilter}
+                tone="dark"
               >
                 {timeWindows.map((item) => (
                   <option key={item.key} value={item.key}>
@@ -1232,37 +1403,11 @@ function LiveDashboard({
                 onChange={(value) =>
                   setTypeFilter(value as (typeof activityTypes)[number]["key"])
                 }
+                tone="dark"
               >
                 {activityTypes.map((item) => (
                   <option key={item.key} value={item.key}>
                     {item.label}
-                  </option>
-                ))}
-              </FilterSelect>
-              <FilterSelect
-                label="Workspace"
-                value={workspaceFilter}
-                onChange={setWorkspaceFilter}
-              >
-                <option value="all">All workspaces</option>
-                {workspaceOptions.map((key) => (
-                  <option key={key} value={key}>
-                    {names.workspaceName(key)}
-                  </option>
-                ))}
-              </FilterSelect>
-              <FilterSelect
-                label="Product"
-                value={productFilter}
-                onChange={setProductFilter}
-              >
-                <option value="all">All products</option>
-                {productOptions.map(({ productKey, workspaceKey }) => (
-                  <option
-                    key={`${workspaceKey}:${productKey}`}
-                    value={productKey}
-                  >
-                    {names.productName(workspaceKey, productKey)}
                   </option>
                 ))}
               </FilterSelect>
@@ -1272,31 +1417,38 @@ function LiveDashboard({
           <section className="overflow-x-auto">
             {activeTab === "all" && (
               <ActivityFeed
-                productFilter={productFilter}
+                filters={filters}
                 settings={sourceSettings}
                 timeFilter={timeFilter}
                 typeFilter={typeFilter}
-                workspaceFilter={workspaceFilter}
               />
             )}
             {activeTab === "tickets" && (
-              <TicketsTable settings={sourceSettings} />
+              <TicketsTable filters={filters} settings={sourceSettings} />
             )}
             {activeTab === "feedback" && (
-              <FeedbackTable settings={sourceSettings} />
+              <FeedbackTable filters={filters} settings={sourceSettings} />
             )}
             {activeTab === "forms" && (
-              <ContactSubmissionsTable settings={sourceSettings} />
+              <ContactSubmissionsTable
+                filters={filters}
+                settings={sourceSettings}
+              />
             )}
             {activeTab === "accounts" && (
-              <AccountCreationsTable settings={sourceSettings} />
+              <AccountCreationsTable
+                filters={filters}
+                settings={sourceSettings}
+              />
             )}
             {activeTab === "contacts" && (
-              <ContactsTable settings={sourceSettings} />
+              <ContactsTable filters={filters} settings={sourceSettings} />
             )}
-            {activeTab === "emails" && <EmailTable settings={sourceSettings} />}
+            {activeTab === "emails" && (
+              <EmailTable filters={filters} settings={sourceSettings} />
+            )}
             {activeTab === "searches" && (
-              <SearchTable settings={sourceSettings} />
+              <SearchTable filters={filters} settings={sourceSettings} />
             )}
             {activeTab === "settings" && (
               <SettingsPanel

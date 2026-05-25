@@ -32,8 +32,31 @@ const matchesContactSource = (
 const inWindow = (timestamp: number, since?: number) =>
   since === undefined || timestamp >= since;
 
+const sourceArgs = {
+  productKey: v.optional(v.string()),
+  workspaceKey: v.optional(v.string()),
+};
+
+const filterBySource = <T extends { companyKey?: string; productKey?: string }>(
+  items: T[],
+  args: { productKey?: string; workspaceKey?: string },
+) =>
+  items.filter((item) =>
+    matchesSource(item, args.workspaceKey, args.productKey),
+  );
+
+const filterContactsBySource = <
+  T extends { companies?: string[]; products?: string[] },
+>(
+  items: T[],
+  args: { productKey?: string; workspaceKey?: string },
+) =>
+  items.filter((item) =>
+    matchesContactSource(item, args.workspaceKey, args.productKey),
+  );
+
 export const getOverview = query({
-  args: {},
+  args: sourceArgs,
   returns: v.object({
     openTickets: v.number(),
     newFeedback: v.number(),
@@ -43,7 +66,7 @@ export const getOverview = query({
     accountCreations: v.number(),
     recentSearches: v.number(),
   }),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const [
       openTickets,
       newFeedback,
@@ -72,19 +95,20 @@ export const getOverview = query({
       ]);
 
     return {
-      openTickets: openTickets.length,
-      newFeedback: newFeedback.length,
-      queuedEmails: queuedEmails.length,
-      contacts: contacts.length,
-      contactSubmissions: contactSubmissions.length,
-      accountCreations: accountCreations.length,
-      recentSearches: recentSearches.length,
+      openTickets: filterBySource(openTickets, args).length,
+      newFeedback: filterBySource(newFeedback, args).length,
+      queuedEmails: filterBySource(queuedEmails, args).length,
+      contacts: filterContactsBySource(contacts, args).length,
+      contactSubmissions: filterBySource(contactSubmissions, args).length,
+      accountCreations: filterBySource(accountCreations, args).length,
+      recentSearches: filterBySource(recentSearches, args).length,
     };
   },
 });
 
 export const listTickets = query({
   args: {
+    ...sourceArgs,
     status: v.optional(ticketStatus),
     limit: limitArg,
   },
@@ -94,19 +118,24 @@ export const listTickets = query({
     const status = args.status;
 
     if (status) {
-      return await ctx.db
+      const tickets = await ctx.db
         .query("supportTickets")
         .withIndex("by_status_updated_at", (q) => q.eq("status", status))
         .order("desc")
-        .take(limit);
+        .take(200);
+
+      return filterBySource(tickets, args).slice(0, limit);
     }
 
-    return await ctx.db.query("supportTickets").order("desc").take(limit);
+    const tickets = await ctx.db.query("supportTickets").order("desc").take(200);
+
+    return filterBySource(tickets, args).slice(0, limit);
   },
 });
 
 export const listFeedback = query({
   args: {
+    ...sourceArgs,
     status: v.optional(feedbackStatus),
     limit: limitArg,
   },
@@ -116,56 +145,75 @@ export const listFeedback = query({
     const status = args.status;
 
     if (status) {
-      return await ctx.db
+      const feedback = await ctx.db
         .query("feedbackItems")
         .withIndex("by_status_created_at", (q) => q.eq("status", status))
         .order("desc")
-        .take(limit);
+        .take(200);
+
+      return filterBySource(feedback, args).slice(0, limit);
     }
 
-    return await ctx.db.query("feedbackItems").order("desc").take(limit);
+    const feedback = await ctx.db.query("feedbackItems").order("desc").take(200);
+
+    return filterBySource(feedback, args).slice(0, limit);
   },
 });
 
 export const listContacts = query({
-  args: { limit: limitArg },
+  args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
-  handler: async (ctx, args) =>
-    await ctx.db.query("contacts").order("desc").take(args.limit ?? 50),
+  handler: async (ctx, args) => {
+    const contacts = await ctx.db.query("contacts").order("desc").take(200);
+
+    return filterContactsBySource(contacts, args).slice(0, args.limit ?? 50);
+  },
 });
 
 export const listContactSubmissions = query({
-  args: { limit: limitArg },
+  args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
-  handler: async (ctx, args) =>
-    await ctx.db
+  handler: async (ctx, args) => {
+    const submissions = await ctx.db
       .query("contactSubmissions")
       .order("desc")
-      .take(args.limit ?? 50),
+      .take(200);
+
+    return filterBySource(submissions, args).slice(0, args.limit ?? 50);
+  },
 });
 
 export const listAccountCreations = query({
-  args: { limit: limitArg },
+  args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
-  handler: async (ctx, args) =>
-    await ctx.db
+  handler: async (ctx, args) => {
+    const accounts = await ctx.db
       .query("accountCreations")
       .order("desc")
-      .take(args.limit ?? 50),
+      .take(200);
+
+    return filterBySource(accounts, args).slice(0, args.limit ?? 50);
+  },
 });
 
 export const listHelpSearches = query({
-  args: { limit: limitArg },
+  args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
-  handler: async (ctx, args) =>
-    await ctx.db.query("helpSearches").order("desc").take(args.limit ?? 50),
+  handler: async (ctx, args) => {
+    const searches = await ctx.db.query("helpSearches").order("desc").take(200);
+
+    return filterBySource(searches, args).slice(0, args.limit ?? 50);
+  },
 });
 
 export const listEmailJobs = query({
-  args: { limit: limitArg },
+  args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
-  handler: async (ctx, args) =>
-    await ctx.db.query("emailJobs").order("desc").take(args.limit ?? 50),
+  handler: async (ctx, args) => {
+    const emails = await ctx.db.query("emailJobs").order("desc").take(200);
+
+    return filterBySource(emails, args).slice(0, args.limit ?? 50);
+  },
 });
 
 export const listActivity = query({

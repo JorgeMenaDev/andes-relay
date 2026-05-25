@@ -154,5 +154,5 @@ for (const submit of submissions) {
   console.log(result);
 }
 
-const overview = await client.query(api.dashboard.getOverview);
+const overview = await client.query(api.dashboard.getOverview, {});
 console.log("overview:", overview);
