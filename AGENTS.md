@@ -1,4 +1,8 @@
 - If `.ops/` exists, read it.
+- This is an open-source project. Treat committed files as public: never commit
+  personal data, secrets, account names, private URLs, customer data, or
+  provider-specific operational notes. Keep those details in ignored local files
+  such as `.ops/` or `.env.local`.
 
 ## 1. Think Before Coding
 
@@ -55,5 +59,4 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
 

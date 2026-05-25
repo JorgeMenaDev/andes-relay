@@ -247,7 +247,7 @@ function FilterSelect({
   return (
     <label
       className={`flex min-w-44 flex-col gap-1 font-mono text-xs ${
-        isDark ? "text-white/45" : "text-[#646262]"
+        isDark ? "text-white/45" : "text-[#646262] dark:text-white/45"
       }`}
     >
       <span>{label}</span>
@@ -257,7 +257,7 @@ function FilterSelect({
         className={`h-10 rounded-[4px] border px-3 text-sm outline-none ${
           isDark
             ? "border-white/10 bg-[#050505] text-white focus:border-white/40"
-            : "border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] text-[#201d1d] focus:border-[#646262]"
+            : "border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] text-[#201d1d] focus:border-[#646262] dark:border-white/10 dark:bg-[#050505] dark:text-white dark:focus:border-white/40"
         }`}
       >
         {children}
@@ -387,13 +387,13 @@ function TextInput({
   value: string;
 }) {
   return (
-    <label className="flex flex-col gap-1 font-mono text-xs text-[#646262]">
+    <label className="flex flex-col gap-1 font-mono text-xs text-[#646262] dark:text-white/45">
       <span>{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
         placeholder={placeholder}
-        className="h-10 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-3 text-sm text-[#201d1d] outline-none focus:border-[#646262]"
+        className="h-10 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] px-3 text-sm text-[#201d1d] outline-none focus:border-[#646262] dark:border-white/10 dark:bg-[#050505] dark:text-white dark:placeholder:text-white/35 dark:focus:border-white/40"
       />
     </label>
   );
@@ -438,10 +438,10 @@ function SettingsPanel({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
-      <section className="border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] p-4">
+      <section className="border border-[rgba(15,0,0,0.12)] bg-[#fdfcfc] p-4 dark:border-white/10 dark:bg-[#111]">
         <div className="mb-4 flex items-center gap-2">
-          <Settings className="h-4 w-4 text-[#646262]" />
-          <h2 className="font-mono text-base font-semibold text-[#201d1d]">
+          <Settings className="h-4 w-4 text-[#646262] dark:text-white/55" />
+          <h2 className="font-mono text-base font-semibold text-[#201d1d] dark:text-white">
             Source settings
           </h2>
         </div>
@@ -473,26 +473,28 @@ function SettingsPanel({
           <button
             type="submit"
             disabled={!workspaceKey.trim()}
-            className="mt-5 h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40"
+            className="mt-5 h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40 dark:bg-white/70 dark:text-black"
           >
             Save
           </button>
         </form>
 
-        <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)]">
+        <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)] dark:border-white/10">
           <table className="w-full min-w-[520px] text-left text-sm">
-            <thead className="bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262]">
+            <thead className="bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262] dark:bg-[#181818] dark:text-white/45">
               <tr>
                 <th className="px-3 py-2 font-medium">Workspace</th>
                 <th className="px-3 py-2 font-medium">Key</th>
                 <th className="px-3 py-2 font-medium">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
+            <tbody className="divide-y divide-[rgba(15,0,0,0.12)] dark:divide-white/10">
               {sourceConfig.workspaces.map((workspace) => (
                 <tr key={workspace.key}>
-                  <td className="px-3 py-2 font-medium">{workspace.name}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-[#646262]">
+                  <td className="px-3 py-2 font-medium text-[#201d1d] dark:text-white">
+                    {workspace.name}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs text-[#646262] dark:text-white/55">
                     {workspace.key}
                   </td>
                   <td className="px-3 py-2">
@@ -508,10 +510,10 @@ function SettingsPanel({
               ))}
               {sourceConfig.discoveredWorkspaces.map((key) => (
                 <tr key={key}>
-                  <td className="px-3 py-2 text-[#646262]">
+                  <td className="px-3 py-2 text-[#646262] dark:text-white/65">
                     {keyLabel(key)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs text-[#646262]">
+                  <td className="px-3 py-2 font-mono text-xs text-[#646262] dark:text-white/55">
                     {key}
                   </td>
                   <td className="px-3 py-2">
@@ -520,7 +522,7 @@ function SettingsPanel({
                       onClick={() =>
                         upsertWorkspace({ key, name: keyLabel(key) })
                       }
-                      className="font-mono text-xs text-[#201d1d]"
+                      className="font-mono text-xs text-[#201d1d] dark:text-white"
                     >
                       Add label
                     </button>
@@ -576,15 +578,15 @@ function SettingsPanel({
           <button
             type="submit"
             disabled={!productKey.trim() || !productWorkspaceKey.trim()}
-            className="mt-5 h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40"
+            className="mt-5 h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40 dark:bg-white/70 dark:text-black"
           >
             Save
           </button>
         </form>
 
-        <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)]">
+        <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)] dark:border-white/10">
           <table className="w-full min-w-[620px] text-left text-sm">
-            <thead className="bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262]">
+            <thead className="bg-[#f8f7f7] font-mono text-xs uppercase text-[#646262] dark:bg-[#181818] dark:text-white/45">
               <tr>
                 <th className="px-3 py-2 font-medium">Product</th>
                 <th className="px-3 py-2 font-medium">Workspace</th>
@@ -592,14 +594,16 @@ function SettingsPanel({
                 <th className="px-3 py-2 font-medium">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
+            <tbody className="divide-y divide-[rgba(15,0,0,0.12)] dark:divide-white/10">
               {sourceConfig.products.map((product) => (
                 <tr key={`${product.workspaceKey}:${product.key}`}>
-                  <td className="px-3 py-2 font-medium">{product.name}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2 font-medium text-[#201d1d] dark:text-white">
+                    {product.name}
+                  </td>
+                  <td className="px-3 py-2 text-[#201d1d] dark:text-white/75">
                     {sourceNames(sourceConfig).workspaceName(product.workspaceKey)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs text-[#646262]">
+                  <td className="px-3 py-2 font-mono text-xs text-[#646262] dark:text-white/55">
                     {product.key}
                   </td>
                   <td className="px-3 py-2">
@@ -620,13 +624,13 @@ function SettingsPanel({
               ))}
               {sourceConfig.discoveredProducts.map((product) => (
                 <tr key={`${product.workspaceKey}:${product.productKey}`}>
-                  <td className="px-3 py-2 text-[#646262]">
+                  <td className="px-3 py-2 text-[#646262] dark:text-white/65">
                     {keyLabel(product.productKey)}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2 text-[#201d1d] dark:text-white/75">
                     {sourceNames(sourceConfig).workspaceName(product.workspaceKey)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs text-[#646262]">
+                  <td className="px-3 py-2 font-mono text-xs text-[#646262] dark:text-white/55">
                     {product.productKey}
                   </td>
                   <td className="px-3 py-2">
@@ -639,7 +643,7 @@ function SettingsPanel({
                           workspaceKey: product.workspaceKey,
                         })
                       }
-                      className="font-mono text-xs text-[#201d1d]"
+                      className="font-mono text-xs text-[#201d1d] dark:text-white"
                     >
                       Add label
                     </button>
@@ -651,35 +655,35 @@ function SettingsPanel({
         </div>
       </section>
 
-      <aside className="border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] p-4">
+      <aside className="border border-[rgba(15,0,0,0.12)] bg-[#f8f7f7] p-4 dark:border-white/10 dark:bg-[#111]">
         <div className="mb-4 flex items-center gap-2">
-          <KeyRound className="h-4 w-4 text-[#646262]" />
-          <h2 className="font-mono text-base font-semibold text-[#201d1d]">
+          <KeyRound className="h-4 w-4 text-[#646262] dark:text-white/55" />
+          <h2 className="font-mono text-base font-semibold text-[#201d1d] dark:text-white">
             Integration settings
           </h2>
         </div>
-        <div className="grid gap-4 font-mono text-sm text-[#424245]">
+        <div className="grid gap-4 font-mono text-sm text-[#424245] dark:text-white/75">
           <div>
-            <p className="text-xs uppercase text-[#646262]">Endpoint</p>
-            <code className="mt-1 block break-all bg-[#f1eeee] p-3 text-xs text-[#201d1d]">
+            <p className="text-xs uppercase text-[#646262] dark:text-white/45">Endpoint</p>
+            <code className="mt-1 block break-all bg-[#f1eeee] p-3 text-xs text-[#201d1d] dark:bg-[#181818] dark:text-white/85">
               {endpoint}/ingest
             </code>
           </div>
           <div>
-            <p className="text-xs uppercase text-[#646262]">Product env vars</p>
-            <pre className="mt-1 overflow-x-auto bg-[#f1eeee] p-3 text-xs text-[#201d1d]">
+            <p className="text-xs uppercase text-[#646262] dark:text-white/45">Product env vars</p>
+            <pre className="mt-1 overflow-x-auto bg-[#f1eeee] p-3 text-xs text-[#201d1d] dark:bg-[#181818] dark:text-white/85">
 {`ANDES_RELAY_ENDPOINT=${endpoint}
 ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
             </pre>
           </div>
           <div>
-            <p className="text-xs uppercase text-[#646262]">SDK install</p>
-            <code className="mt-1 block bg-[#f1eeee] p-3 text-xs text-[#201d1d]">
+            <p className="text-xs uppercase text-[#646262] dark:text-white/45">SDK install</p>
+            <code className="mt-1 block bg-[#f1eeee] p-3 text-xs text-[#201d1d] dark:bg-[#181818] dark:text-white/85">
               bun add @openandes/relay-sdk
             </code>
           </div>
           <div>
-            <p className="text-xs uppercase text-[#646262]">MCP</p>
+            <p className="text-xs uppercase text-[#646262] dark:text-white/45">MCP</p>
             <p className="mt-1 leading-6">
               No MCP server is exposed yet. Current integrations use the HTTP
               ingest endpoint and SDK. Keep the ingest secret server-side only.
@@ -687,10 +691,10 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
           </div>
         </div>
 
-        <div className="mt-6 border-t border-[rgba(15,0,0,0.12)] pt-4">
+        <div className="mt-6 border-t border-[rgba(15,0,0,0.12)] pt-4 dark:border-white/10">
           <div className="mb-4 flex items-center gap-2">
-            <Users className="h-4 w-4 text-[#646262]" />
-            <h2 className="font-mono text-base font-semibold text-[#201d1d]">
+            <Users className="h-4 w-4 text-[#646262] dark:text-white/55" />
+            <h2 className="font-mono text-base font-semibold text-[#201d1d] dark:text-white">
               Workspace access
             </h2>
           </div>
@@ -737,15 +741,15 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
             <button
               type="submit"
               disabled={!inviteWorkspaceKey.trim() || !inviteEmail.trim()}
-              className="h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40"
+              className="h-10 rounded-[4px] bg-[#201d1d] px-4 font-mono text-sm font-medium text-[#fdfcfc] disabled:opacity-40 dark:bg-white/70 dark:text-black"
             >
               Invite
             </button>
           </form>
 
-          <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)]">
+          <div className="mt-4 overflow-hidden border border-[rgba(15,0,0,0.12)] dark:border-white/10">
             <table className="w-full min-w-[420px] text-left text-sm">
-              <thead className="bg-[#f1eeee] font-mono text-xs uppercase text-[#646262]">
+              <thead className="bg-[#f1eeee] font-mono text-xs uppercase text-[#646262] dark:bg-[#181818] dark:text-white/45">
                 <tr>
                   <th className="px-3 py-2 font-medium">Email</th>
                   <th className="px-3 py-2 font-medium">Workspace</th>
@@ -754,14 +758,16 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
                   <th className="px-3 py-2 font-medium">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(15,0,0,0.12)]">
+              <tbody className="divide-y divide-[rgba(15,0,0,0.12)] dark:divide-white/10">
                 {invites.map((invite) => (
                   <tr key={invite._id}>
-                    <td className="px-3 py-2 font-medium">{invite.email}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 font-medium text-[#201d1d] dark:text-white">
+                      {invite.email}
+                    </td>
+                    <td className="px-3 py-2 text-[#201d1d] dark:text-white/75">
                       {sourceNames(sourceConfig).workspaceName(invite.workspaceKey)}
                     </td>
-                    <td className="px-3 py-2 font-mono text-xs text-[#646262]">
+                    <td className="px-3 py-2 font-mono text-xs text-[#646262] dark:text-white/55">
                       {invite.role}
                     </td>
                     <td className="px-3 py-2">
@@ -784,7 +790,7 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-3 py-6 text-center font-mono text-xs text-[#646262]"
+                      className="px-3 py-6 text-center font-mono text-xs text-[#646262] dark:text-white/55"
                     >
                       No workspace invites yet.
                     </td>
@@ -794,7 +800,7 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
             </table>
           </div>
           {!authConfigured ? (
-            <p className="mt-3 text-xs leading-5 text-[#646262]">
+            <p className="mt-3 text-xs leading-5 text-[#646262] dark:text-white/55">
               Clerk is disabled locally, so invites are saved without a signed-in
               sender.
             </p>
