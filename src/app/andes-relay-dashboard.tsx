@@ -24,6 +24,16 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   SidebarInset,
   SidebarProvider,
@@ -180,52 +190,108 @@ function SignalActions({
 }) {
   const archiveSignal = useMutation(api.signals.archive);
   const [archiving, setArchiving] = useState(false);
+  const [confirmingArchive, setConfirmingArchive] = useState(false);
 
   const archive = async () => {
-    if (!window.confirm(`Archive ${label}? It will be removed from this view.`)) {
-      return;
-    }
-
     setArchiving(true);
     try {
       await archiveSignal({ target });
+      setConfirmingArchive(false);
     } finally {
       setArchiving(false);
     }
   };
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button
-          type="button"
-          aria-label={`Open actions for ${label}`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white text-[#646262] hover:bg-[#f8f7f7] disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
-          disabled={archiving}
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align="end"
-          sideOffset={6}
-          className="z-50 min-w-36 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-1 shadow-lg dark:border-white/10 dark:bg-[#181818]"
-        >
-          <DropdownMenu.Item
+    <Dialog open={confirmingArchive} onOpenChange={setConfirmingArchive}>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            aria-label={`Open actions for ${label}`}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white text-[#646262] hover:bg-[#f8f7f7] disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
             disabled={archiving}
-            onSelect={(event) => {
-              event.preventDefault();
-              void archive();
-            }}
-            className="flex cursor-pointer items-center gap-2 rounded-[3px] px-2 py-2 font-mono text-xs text-[#201d1d] outline-none hover:bg-[#f8f7f7] disabled:pointer-events-none disabled:opacity-40 dark:text-white/85 dark:hover:bg-white/10"
           >
-            <Archive className="h-3.5 w-3.5" />
-            Archive
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            sideOffset={6}
+            className="z-50 min-w-36 rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-1 shadow-lg dark:border-white/10 dark:bg-[#181818]"
+          >
+            <DropdownMenu.Item
+              disabled={archiving}
+              onSelect={(event) => {
+                event.preventDefault();
+                setConfirmingArchive(true);
+              }}
+              className="flex cursor-pointer items-center gap-2 rounded-[3px] px-2 py-2 font-mono text-xs text-[#201d1d] outline-none hover:bg-[#f8f7f7] disabled:pointer-events-none disabled:opacity-40 dark:text-white/85 dark:hover:bg-white/10"
+            >
+              <Archive className="h-3.5 w-3.5" />
+              Archive
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+      <DialogContent
+        className="rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white text-[#201d1d] dark:border-white/10 dark:bg-[#111] dark:text-white"
+        showCloseButton={!archiving}
+      >
+        <DialogHeader>
+          <DialogTitle>Archive signal?</DialogTitle>
+          <DialogDescription>
+            {label} will be removed from the default dashboard views.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="rounded-b-[4px] dark:border-white/10 dark:bg-white/5">
+          <DialogClose asChild>
+            <Button type="button" variant="outline" disabled={archiving}>
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={archiving}
+            onClick={() => void archive()}
+          >
+            {archiving ? "Archiving..." : "Archive"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  icon: Icon,
+  onSelect,
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-4 text-left transition hover:border-[#646262] hover:bg-[#f8f7f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#646262] dark:border-white/10 dark:bg-[#111] dark:hover:border-white/30 dark:hover:bg-white/5 dark:focus-visible:ring-white/40"
+    >
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-xs font-medium uppercase text-[#646262] dark:text-white/45">
+          {label}
+        </p>
+        <Icon className="h-4 w-4 text-[#646262] dark:text-white/45" />
+      </div>
+      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-[#201d1d] dark:text-white">
+        {value}
+      </p>
+    </button>
   );
 }
 
@@ -338,30 +404,6 @@ function SetupScreen() {
         </div>
       </section>
     </main>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: number;
-  icon: LucideIcon;
-}) {
-  return (
-    <div className="rounded-[4px] border border-[rgba(15,0,0,0.12)] bg-white p-4 dark:border-white/10 dark:bg-[#111]">
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-xs font-medium uppercase text-[#646262] dark:text-white/45">
-          {label}
-        </p>
-        <Icon className="h-4 w-4 text-[#646262] dark:text-white/45" />
-      </div>
-      <p className="mt-3 font-mono text-3xl font-semibold tracking-normal text-[#201d1d] dark:text-white">
-        {value}
-      </p>
-    </div>
   );
 }
 
@@ -1448,6 +1490,61 @@ function LiveDashboard({
   const selectedProjectName = selectedProduct
     ? names.productName(selectedProduct.workspaceKey, selectedProduct.productKey)
     : "All projects";
+  const metricItems = [
+    {
+      activityType: "ticket",
+      icon: LifeBuoy,
+      label: "Open support",
+      tab: "tickets",
+      value: overview?.openTickets ?? 0,
+    },
+    {
+      activityType: "feedback",
+      icon: MessageSquareText,
+      label: "New feedback",
+      tab: "feedback",
+      value: overview?.newFeedback ?? 0,
+    },
+    {
+      activityType: "email",
+      icon: Mail,
+      label: "Queued emails",
+      tab: "emails",
+      value: overview?.queuedEmails ?? 0,
+    },
+    {
+      activityType: "contact",
+      icon: Users,
+      label: "Contacts",
+      tab: "contacts",
+      value: overview?.contacts ?? 0,
+    },
+    {
+      activityType: "form",
+      icon: ClipboardList,
+      label: "Forms",
+      tab: "forms",
+      value: overview?.contactSubmissions ?? 0,
+    },
+    {
+      activityType: "account",
+      icon: UserPlus,
+      label: "Accounts",
+      tab: "accounts",
+      value: overview?.accountCreations ?? 0,
+    },
+    {
+      activityType: "search",
+      icon: Search,
+      label: "Recent searches",
+      tab: "searches",
+      value: overview?.recentSearches ?? 0,
+    },
+  ] as const;
+  const visibleMetricItems =
+    typeFilter === "all"
+      ? metricItems
+      : metricItems.filter((item) => item.activityType === typeFilter);
 
   return (
     <SidebarProvider
@@ -1528,73 +1625,49 @@ function LiveDashboard({
             </div>
           </header>
 
-          <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
-            <Metric
-              label="Open support"
-              value={overview?.openTickets ?? 0}
-              icon={LifeBuoy}
-            />
-            <Metric
-              label="New feedback"
-              value={overview?.newFeedback ?? 0}
-              icon={MessageSquareText}
-            />
-            <Metric
-              label="Queued emails"
-              value={overview?.queuedEmails ?? 0}
-              icon={Mail}
-            />
-            <Metric
-              label="Contacts"
-              value={overview?.contacts ?? 0}
-              icon={Users}
-            />
-            <Metric
-              label="Forms"
-              value={overview?.contactSubmissions ?? 0}
-              icon={ClipboardList}
-            />
-            <Metric
-              label="Accounts"
-              value={overview?.accountCreations ?? 0}
-              icon={UserPlus}
-            />
-            <Metric
-              label="Recent searches"
-              value={overview?.recentSearches ?? 0}
-              icon={Search}
-            />
-          </div>
-
           {activeTab === "all" && (
-            <div className="flex flex-wrap gap-3 border border-[rgba(15,0,0,0.12)] bg-white p-4 dark:border-white/10 dark:bg-[#111]">
-              <FilterSelect
-                label="Window"
-                value={timeFilter}
-                onChange={setTimeFilter}
-                tone={theme}
-              >
-                {timeWindows.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.label}
-                  </option>
+            <>
+              <div className="flex flex-wrap gap-3 border border-[rgba(15,0,0,0.12)] bg-white p-4 dark:border-white/10 dark:bg-[#111]">
+                <FilterSelect
+                  label="Window"
+                  value={timeFilter}
+                  onChange={setTimeFilter}
+                  tone={theme}
+                >
+                  {timeWindows.map((item) => (
+                    <option key={item.key} value={item.key}>
+                      {item.label}
+                    </option>
+                  ))}
+                </FilterSelect>
+                <FilterSelect
+                  label="Type"
+                  value={typeFilter}
+                  onChange={(value) =>
+                    setTypeFilter(value as (typeof activityTypes)[number]["key"])
+                  }
+                  tone={theme}
+                >
+                  {activityTypes.map((item) => (
+                    <option key={item.key} value={item.key}>
+                      {item.label}
+                    </option>
+                  ))}
+                </FilterSelect>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
+                {visibleMetricItems.map((item) => (
+                  <Metric
+                    key={item.tab}
+                    label={item.label}
+                    value={item.value}
+                    icon={item.icon}
+                    onSelect={() => setActiveTab(item.tab)}
+                  />
                 ))}
-              </FilterSelect>
-              <FilterSelect
-                label="Type"
-                value={typeFilter}
-                onChange={(value) =>
-                  setTypeFilter(value as (typeof activityTypes)[number]["key"])
-                }
-                tone={theme}
-              >
-                {activityTypes.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.label}
-                  </option>
-                ))}
-              </FilterSelect>
-            </div>
+              </div>
+            </>
           )}
 
           <section className="overflow-x-auto">
