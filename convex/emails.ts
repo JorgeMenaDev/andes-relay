@@ -1,3 +1,4 @@
+import { requireOperator } from "./access";
 import { v } from "convex/values";
 import { action, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -58,6 +59,7 @@ export const sendQueued = action({
     skipped: v.optional(v.string()),
   }),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.RESEND_FROM_EMAIL;
 

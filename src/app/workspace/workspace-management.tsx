@@ -99,6 +99,7 @@ export function WorkspaceManagement() {
 
         <section className="grid gap-4 border border-[#d8d1bf] bg-[#fffdf7] p-4">
           <h2 className="font-mono text-base font-semibold">Invite people</h2>
+          <p className="text-sm">Invitations are records only. Access requires deployment operator approval.</p>
           <form
             className="grid gap-3 md:grid-cols-[1fr_1fr_160px_auto]"
             onSubmit={async (event) => {

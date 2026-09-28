@@ -1,3 +1,4 @@
+import { requireOperator } from "./access";
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 
@@ -36,6 +37,7 @@ export const archive = mutation({
   args: { target: archiveTarget },
   returns: v.null(),
   handler: async (ctx, { target }) => {
+    await requireOperator(ctx);
     const archivedAt = Date.now();
 
     switch (target.type) {
