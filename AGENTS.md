@@ -60,3 +60,11 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+
+## Backend verification
+
+Use an isolated anonymous local Convex deployment with explicit unused ports for
+authorization checks. Use synthetic identities and dummy secrets only; never
+copy cloud deployment credentials or production data into verification fixtures.
+The dashboard requires a configured Clerk issuer and explicit operator subjects.
+A local admin impersonation probe validates policy, not the real Clerk login flow.

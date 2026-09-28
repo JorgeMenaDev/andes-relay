@@ -1,3 +1,4 @@
+import { requireOperator } from "./access";
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { ticketStatus } from "./validators";
@@ -9,6 +10,7 @@ export const updateStatus = mutation({
   },
   returns: v.null(),
   handler: async (ctx, { ticketId, status }) => {
+    await requireOperator(ctx);
     await ctx.db.patch(ticketId, {
       status,
       updatedAt: Date.now(),
@@ -25,6 +27,7 @@ export const addOperatorReply = mutation({
   },
   returns: v.id("ticketMessages"),
   handler: async (ctx, { ticketId, message }) => {
+    await requireOperator(ctx);
     const now = Date.now();
     const messageId = await ctx.db.insert("ticketMessages", {
       ticketId,

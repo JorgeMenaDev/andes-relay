@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { opsEvent } from "./validators";
 
@@ -18,7 +18,7 @@ const duplicate = (recordId: string) => ({
 });
 const ignored = (recordId: string) => ({ status: "ignored" as const, recordId });
 
-export const ingestEvent = mutation({
+export const ingestEvent = internalMutation({
   args: { event: opsEvent },
   returns: v.object({
     status: v.union(

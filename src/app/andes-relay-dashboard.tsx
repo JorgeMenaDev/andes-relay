@@ -843,8 +843,7 @@ ANDES_RELAY_INGEST_SECRET=<server-side secret>`}
           </div>
           {!authConfigured ? (
             <p className="mt-3 text-xs leading-5 text-[#646262] dark:text-white/55">
-              Clerk is disabled locally, so invites are saved without a signed-in
-              sender.
+              Sign-in and deployment operator approval are required.
             </p>
           ) : null}
         </div>

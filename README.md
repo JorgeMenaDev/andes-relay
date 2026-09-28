@@ -72,15 +72,20 @@ The `Settings` view lets an operator:
 - See the ingest endpoint, product environment variables, and SDK install
   command.
 - Create workspaces inside Andes Relay.
-- Invite workspace members from the dashboard or `/workspace`.
+- Record proposed workspace invitations from the dashboard or `/workspace`. Invitations do not grant access.
 
 The direct dashboard routes are:
 
 - `/create-workspace`: create a new workspace.
-- `/workspace`: manage the selected workspace, members, and invitations.
+- `/workspace`: manage workspace labels and invitation records.
 
 Clerk is used for authentication only. Workspace records and invites are Andes
 Relay data in Convex, not Clerk Organization records.
+
+This deployment is a shared operator console, not a tenant-isolated service. Only
+Clerk users explicitly listed in the backend operator configuration can read or
+change any workspace data. Every allowed operator can manage every workspace.
+Signing up, matching an invitation email, or creating a workspace grants no access.
 
 Removing a workspace or product in settings removes the dashboard label, not the
 historical ingested events.
@@ -111,10 +116,12 @@ NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ```
 
-Ingestion:
+Convex backend:
 
 ```bash
 ANDES_RELAY_INGEST_SECRET=
+CLERK_JWT_ISSUER_DOMAIN=
+ANDES_RELAY_OPERATOR_SUBJECTS=
 ```
 
 Product apps need server-side environment variables:
@@ -123,6 +130,13 @@ Product apps need server-side environment variables:
 ANDES_RELAY_ENDPOINT=https://your-convex-site.convex.site
 ANDES_RELAY_INGEST_SECRET=<shared secret>
 ```
+
+Before deploying the backend, set `CLERK_JWT_ISSUER_DOMAIN` to the exact Clerk
+issuer and `ANDES_RELAY_OPERATOR_SUBJECTS` to a comma-separated list of approved
+Clerk user IDs in each Convex deployment. Configure the Clerk JWT template named
+`convex` with audience `convex`. The client forwards that token to Convex. Missing
+issuer/operator configuration denies dashboard access; no schema backfill is needed.
+Never put the operator list in public source or a `NEXT_PUBLIC_` variable.
 
 Keep `ANDES_RELAY_INGEST_SECRET` server-side only. Do not expose it in browser
 code.

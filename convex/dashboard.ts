@@ -1,3 +1,4 @@
+import { requireOperator } from "./access";
 import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { feedbackStatus, ticketStatus } from "./validators";
@@ -72,6 +73,7 @@ export const getOverview = query({
     recentSearches: v.number(),
   }),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const [
       openTickets,
       newFeedback,
@@ -119,6 +121,7 @@ export const listTickets = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const limit = args.limit ?? 50;
     const status = args.status;
 
@@ -146,6 +149,7 @@ export const listFeedback = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const limit = args.limit ?? 50;
     const status = args.status;
 
@@ -169,6 +173,7 @@ export const listContacts = query({
   args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const contacts = await ctx.db.query("contacts").order("desc").take(200);
 
     return filterContactsBySource(contacts, args).slice(0, args.limit ?? 50);
@@ -179,6 +184,7 @@ export const listContactSubmissions = query({
   args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const submissions = await ctx.db
       .query("contactSubmissions")
       .order("desc")
@@ -192,6 +198,7 @@ export const listAccountCreations = query({
   args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const accounts = await ctx.db
       .query("accountCreations")
       .order("desc")
@@ -205,6 +212,7 @@ export const listHelpSearches = query({
   args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const searches = await ctx.db.query("helpSearches").order("desc").take(200);
 
     return filterBySource(searches, args).slice(0, args.limit ?? 50);
@@ -215,6 +223,7 @@ export const listEmailJobs = query({
   args: { ...sourceArgs, limit: limitArg },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const emails = await ctx.db.query("emailJobs").order("desc").take(200);
 
     return filterBySource(emails, args).slice(0, args.limit ?? 50);
@@ -231,6 +240,7 @@ export const listActivity = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const limit = args.limit ?? 100;
     const [
       tickets,

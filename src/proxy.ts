@@ -30,7 +30,7 @@ const clerkProtectedProxy = hasClerkConfig
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {
   if (!clerkProtectedProxy) {
-    return NextResponse.next();
+    return new NextResponse("Authentication is not configured", { status: 503 });
   }
 
   return clerkProtectedProxy(request, event);

@@ -1,5 +1,5 @@
 import { httpRouter } from "convex/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 
 const json = (body: unknown, status = 200) =>
@@ -49,7 +49,7 @@ http.route({
         companyKey: workspaceKey,
       },
     };
-    const result = await ctx.runMutation(api.ingest.ingestEvent, {
+    const result = await ctx.runMutation(internal.ingest.ingestEvent, {
       event: normalizedEvent,
     });
 

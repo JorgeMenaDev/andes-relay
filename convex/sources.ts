@@ -1,3 +1,4 @@
+import { requireOperator } from "./access";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
@@ -41,6 +42,7 @@ export const listSettings = query({
     workspaces: v.array(v.any()),
   }),
   handler: async (ctx) => {
+    await requireOperator(ctx);
     const [workspaces, products, events] = await Promise.all([
       ctx.db.query("sourceCompanies").order("asc").collect(),
       ctx.db.query("sourceProducts").order("asc").collect(),
@@ -86,6 +88,7 @@ export const upsertWorkspace = mutation({
   args: sourceInput,
   returns: v.id("sourceCompanies"),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const key = cleanKey(args.key);
     const name = cleanName(args.name);
     const now = Date.now();
@@ -116,6 +119,7 @@ export const upsertProduct = mutation({
   },
   returns: v.id("sourceProducts"),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const key = cleanKey(args.key);
     const companyKey = cleanKey(args.workspaceKey);
     const name = cleanName(args.name);
@@ -146,6 +150,7 @@ export const removeWorkspace = mutation({
   args: { key: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const key = cleanKey(args.key);
     const existing = await ctx.db
       .query("sourceCompanies")
@@ -173,6 +178,7 @@ export const removeProduct = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const key = cleanKey(args.key);
     const companyKey = cleanKey(args.workspaceKey);
     const existing = await ctx.db
@@ -195,6 +201,7 @@ export const listWorkspaceInvites = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     if (args.workspaceKey) {
       return await ctx.db
         .query("workspaceInvites")
@@ -212,12 +219,12 @@ export const listWorkspaceInvites = query({
 export const createWorkspaceInvite = mutation({
   args: {
     email: v.string(),
-    invitedByEmail: v.optional(v.string()),
     role: inviteRole,
     workspaceKey: v.string(),
   },
   returns: v.id("workspaceInvites"),
   handler: async (ctx, args) => {
+    const operator = await requireOperator(ctx);
     const workspaceKey = cleanKey(args.workspaceKey);
     const email = args.email.trim();
     const normalizedEmail = cleanEmail(args.email);
@@ -232,7 +239,7 @@ export const createWorkspaceInvite = mutation({
     if (existing) {
       await ctx.db.patch(existing._id, {
         email,
-        invitedByEmail: args.invitedByEmail,
+        invitedByEmail: operator.email,
         role: args.role,
         status: "pending",
         updatedAt: now,
@@ -245,7 +252,7 @@ export const createWorkspaceInvite = mutation({
       workspaceKey,
       email,
       normalizedEmail,
-      invitedByEmail: args.invitedByEmail,
+      invitedByEmail: operator.email,
       role: args.role,
       status: "pending",
       createdAt: now,
@@ -258,6 +265,7 @@ export const revokeWorkspaceInvite = mutation({
   args: { id: v.id("workspaceInvites") },
   returns: v.null(),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     await ctx.db.patch(args.id, {
       status: "revoked",
       updatedAt: Date.now(),
@@ -286,6 +294,7 @@ export const seedWorkspaces = mutation({
     workspaces: v.number(),
   }),
   handler: async (ctx, args) => {
+    await requireOperator(ctx);
     const now = Date.now();
 
     for (const workspaceInput of args.workspaces) {
